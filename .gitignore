@@ -263,6 +263,9 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Application configuration file
+App.config
+
 # Visual Studio 6 build log
 *.plg
 
