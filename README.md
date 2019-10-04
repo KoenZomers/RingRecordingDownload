@@ -14,7 +14,7 @@
 [issues]:https://github.com/koenzomers/RingRecordingDownload/issues
 
 # Ring Recording Download Tool
-Console application written in .NET Framework 4.6.2 which allows for downloading of Ring recorded events to your local machine.
+Console application written in .NET Framework 4.6.2 which allows for downloading of Ring recorded events to your local machine. It is just a sample console application wrapper around the [Ring API I have written](https://github.com/KoenZomers/RingApi).
 
 ## Version History
 
