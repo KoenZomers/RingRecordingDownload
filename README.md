@@ -33,6 +33,10 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 2. Extract it to any location on your machine
 3. Run RingRecordingDownload.exe in a Command Prompt or PowerShell window to see the possible parameters and samples
 
+![](./Screenshots/SampleExecution.png)
+
+![](./Screenshots/Files.png)
+
 ## Current functionality
 
 With this tool in its current state you can:
