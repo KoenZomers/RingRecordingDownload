@@ -37,6 +37,8 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ![](./Screenshots/Files.png)
 
+![](./Screenshots/CommandLineOptions.png)
+
 ## Current functionality
 
 With this tool in its current state you can:

@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Screenshots", "Screenshots", "{64BAC522-F066-424B-9B1E-AA009D305312}"
 	ProjectSection(SolutionItems) = preProject
+		Screenshots\CommandLineOptions.png = Screenshots\CommandLineOptions.png
 		Screenshots\Files.png = Screenshots\Files.png
 		Screenshots\SampleExecution.png = Screenshots\SampleExecution.png
 	EndProjectSection
