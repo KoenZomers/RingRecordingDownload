@@ -1,4 +1,3 @@
-# Ring API
 [![licence badge]][licence]
 [![stars badge]][stars]
 [![forks badge]][forks]
@@ -25,7 +24,8 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## System Requirements
 
-This API is built using Microsoft .NET Framework 4.6.2
+- Windows machine
+- Microsoft .NET Framework 4.6.2
 
 ## Usage Instructions
 
@@ -43,4 +43,4 @@ With this tool in its current state you can:
 
 ## Feedback
 
-Any kind of feedback is welcome! Feel free to drop me an e-mail at koen@zomers.eu
+Any kind of feedback is welcome! Feel free to drop me an e-mail at koen@zomers.eu or [create an issue](https://github.com/KoenZomers/RingRecordingDownload/issues).
