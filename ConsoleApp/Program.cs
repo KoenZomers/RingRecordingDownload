@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.IO;
 
 namespace KoenZomers.Ring.RecordingDownload
 {
@@ -75,29 +76,55 @@ namespace KoenZomers.Ring.RecordingDownload
 
             Console.WriteLine($"{doorbotHistory.Count} item{(doorbotHistory.Count == 1 ? "" : "s")} found, downloading to {configuration.OutputPath}");
 
-            for(var x = 0; x < doorbotHistory.Count; x++)
+            for(var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
             {
-                var doorbotHistoryItem = doorbotHistory[x];
+                var doorbotHistoryItem = doorbotHistory[itemCount];
 
                 // If no valid date on the item, skip it and continue with the next
                 if (!doorbotHistoryItem.CreatedAtDateTime.HasValue) continue;
 
                 // Construct the filename and path where to save the file
                 var downloadFileName = $"{doorbotHistoryItem.CreatedAtDateTime.Value:yyyy-MM-dd HH-mm-ss} ({doorbotHistoryItem.Id}).mp4";
-                var downloadFullPath = System.IO.Path.Combine(configuration.OutputPath, downloadFileName);
+                var downloadFullPath = Path.Combine(configuration.OutputPath, downloadFileName);                
 
-                Console.Write($"{x + 1} - {downloadFileName}... ");
-                
-                try
+                short attempt = 0;
+                do
                 {
-                    session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath).Wait();
+                    attempt++;
 
-                    Console.WriteLine($"done ({new System.IO.FileInfo(downloadFullPath).Length / 1048576} MB)");
-                }
-                catch(System.AggregateException e)
-                {
-                    Console.WriteLine($"failed ({(e.InnerException != null ? e.InnerException.Message : e.Message)})");
-                }
+                    Console.Write($"{itemCount + 1} - {downloadFileName}... ");
+
+                    try
+                    {
+                        session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath).Wait();
+
+                        Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
+                        break;
+                    }
+                    catch (AggregateException e)
+                    {
+                        if (e.InnerException != null && e.InnerException.GetType() == typeof(System.Net.WebException) && ((System.Net.WebException)e.InnerException).Response != null)
+                        {
+                            var webException = (System.Net.WebException)e.InnerException;
+                            var response = new StreamReader(webException.Response.GetResponseStream()).ReadToEnd();
+
+                            Console.Write($"failed ({(e.InnerException != null ? e.InnerException.Message : e.Message)} - {response})");
+                        }
+                        else
+                        {
+                            Console.Write($"failed ({(e.InnerException != null ? e.InnerException.Message : e.Message)})");
+                        }
+                    }
+
+                    if(attempt >= configuration.MaxRetries)
+                    {
+                        Console.WriteLine(". Giving up.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($". Retrying {attempt + 1}/{configuration.MaxRetries}.");
+                    }
+                } while (attempt < configuration.MaxRetries);
             }
 
             Console.WriteLine("Done");
@@ -163,6 +190,14 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
             }
 
+            if (args.Contains("-retries"))
+            {
+                if (short.TryParse(args[args.IndexOf("-retries") + 1], out short maxRetries))
+                {
+                    configuration.MaxRetries = maxRetries;
+                }
+            }
+
             return configuration;
         }
 
@@ -181,9 +216,11 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("lastdays: The amount of days in the past to download recordings of (optional)");
             Console.WriteLine("startdate: Date and time from which to start downloading events (optional)");
             Console.WriteLine("enddate: Date and time until which to download events (optional, will use today if not specified)");
+            Console.WriteLine("retries: Amount of retries on download failures (optional, will use 3 retries by default)");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7");
+            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -retries 5");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring -out c:\\recordings");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate 12-02-2019 08:12:45");

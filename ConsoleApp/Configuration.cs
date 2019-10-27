@@ -36,5 +36,10 @@ namespace KoenZomers.Ring.RecordingDownload
         /// Type of historical event to download
         /// </summary>
         public string Type;
+
+        /// <summary>
+        /// Amount of times to retry downloading a recording if it fails
+        /// </summary>
+        public short MaxRetries = 3;
     }
 }

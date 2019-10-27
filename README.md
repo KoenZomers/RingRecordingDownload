@@ -18,7 +18,12 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## Version History
 
-1.0 - October 5, 2019
+1.0.1.0 - October 27, 2019
+
+- Added retry option based on feedback received. The Ring service randomly gives out 404 File Not Found errors. When you just retry it a couple of times it will work. By default it will retry three times now. You can increase this number by providing the -retries flag.
+- If an error is returned by the Ring service, the error shown in the console output will now also show the actual error returned by Ring, if available
+
+1.0.0.0 - October 5, 2019
 
 - Initial version
 
