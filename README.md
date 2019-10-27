@@ -18,6 +18,10 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## Version History
 
+1.0.2.0 - October 27, 2019
+
+- Upgraded the Ring API package to version 0.3.5.0 which ensures the session with the Ring service is still active. This should resolve the 401 Unauthorized errors which occur after one hour of downloading recordings.
+
 1.0.1.0 - October 27, 2019
 
 - Added retry option based on feedback received. The Ring service randomly gives out 404 File Not Found errors. When you just retry it a couple of times it will work. By default it will retry three times now. You can increase this number by providing the -retries flag.
