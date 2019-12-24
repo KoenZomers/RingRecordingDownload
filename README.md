@@ -18,6 +18,12 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## Version History
 
+1.1.0.0 - December 24, 2019
+
+- Ring changed their download API which caused this tool to fail on some recording downloads. Updated the code so that it downloads the recordings properly.
+- Added support for using Ring accounts with two factor authentication enabled. If the account you wish to use uses two factor authentication, run the tool manually the first time. It will trigger a text message to be sent to you and ask for it in the console application. Once you've entered the token received in the text message on your phone, it will store the refresh token in the application configuration file so on subsequent runs you don't need to enter it anymore and can run the application unattended in i.e. a daily script. Also for Ring accounts without two factor authentication, you don't have to store the credentials in the config file anymore or provide them on every run as it will utilize the refresh token from the first run to authenticate.
+- Upgraded the [Ring API package](https://github.com/KoenZomers/RingApi) to [version 0.4.1.0](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.1)
+
 1.0.2.0 - October 27, 2019
 
 - Upgraded the Ring API package to version 0.3.5.0 which ensures the session with the Ring service is still active. This should resolve the 401 Unauthorized errors which occur after one hour of downloading recordings.
@@ -48,10 +54,13 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ![](./Screenshots/Files.png)
 
+If you want to run this application unattended in i.e. a scheduled daily download script, ensure you run it once manually with your username and password. After this run it will store the refresh token and will run without needing a username, password or two factor authentication token on subsequent runs.
+
 ## Current functionality
 
 With this tool in its current state you can:
 
+- Log on once to a two factor authentication enabled Ring account and then have it use the retrieved refresh token to run unattended on subsequent runs
 - Download all recordings of the last X days
 - Download all recordings between two specific data/times
 - Download all recordings of a specific type, i.e. ring or motion

@@ -10,6 +10,21 @@ namespace KoenZomers.Ring.RecordingDownload
 {
     class Program
     {
+        /// <summary>
+        /// Refresh token to use to authenticate to the Ring API
+        /// </summary>
+        public static string RefreshToken
+        {
+            get { return ConfigurationManager.AppSettings["RefreshToken"]; }
+            set
+            { 
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                configFile.AppSettings.Settings["RefreshToken"].Value = value;
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+        }
+
         static void Main(string[] args)
         {
             Console.WriteLine();
@@ -30,13 +45,13 @@ namespace KoenZomers.Ring.RecordingDownload
             var configuration = ParseArguments(args);
 
             // Ensure we have the required configuration
-            if(string.IsNullOrWhiteSpace(configuration.Username))
+            if(string.IsNullOrWhiteSpace(configuration.Username) && string.IsNullOrWhiteSpace(RefreshToken))
             {
                 Console.WriteLine("-username is required");
                 Environment.Exit(1);
             }
 
-            if (string.IsNullOrWhiteSpace(configuration.Password))
+            if (string.IsNullOrWhiteSpace(configuration.Password) && string.IsNullOrWhiteSpace(RefreshToken))
             {
                 Console.WriteLine("-password is required");
                 Environment.Exit(1);
@@ -50,18 +65,45 @@ namespace KoenZomers.Ring.RecordingDownload
 
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
-            var session = new Session(configuration.Username, configuration.Password);
+            Session session;
+            if (!string.IsNullOrWhiteSpace(RefreshToken))
+            {
+                // Use refresh token from previous session
+                Console.WriteLine("Authenticating using refresh token from previous session");
 
-            try
-            {
-                // Authenticate
-                Console.WriteLine("Authenticating");
-                session.Authenticate().Wait();
+                session = Session.GetSessionByRefreshToken(RefreshToken).Result;
             }
-            catch(System.Net.WebException)
+            else
             {
-                Console.WriteLine("Connection failed. Validate your credentials.");
-                Environment.Exit(1);
+                // Use the username and password provided
+                Console.WriteLine("Authenticating using provided username and password");
+
+                session = new Session(configuration.Username, configuration.Password);
+
+                try
+                {
+                    session.Authenticate().Wait();
+                }
+                catch (Exception e) when (e.InnerException != null && e.InnerException.GetType() == typeof(Api.Exceptions.TwoFactorAuthenticationRequiredException))
+                {
+                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text message to be sent. Ask for the token sent in that message here.
+                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the token received in the text message on your phone:");
+                    var token = Console.ReadLine();
+
+                    // Authenticate again using the two factor token
+                    session.Authenticate(twoFactorAuthCode: token).Wait();
+                }
+                catch (System.Net.WebException)
+                {
+                    Console.WriteLine("Connection failed. Validate your credentials.");
+                    Environment.Exit(1);
+                }
+            }
+
+            // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
+            if(session.OAuthToken != null)
+            {
+                RefreshToken = session.OAuthToken.RefreshToken;
             }
 
             // Retrieve all sessions
