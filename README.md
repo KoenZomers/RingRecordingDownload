@@ -18,6 +18,10 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## Version History
 
+1.1.0.1 - January 22, 2020
+
+- Upgraded the [Ring API package](https://github.com/KoenZomers/RingApi) to [version 0.4.2.1](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.2.1) which fixes an issue retrieving the doorbot history which this tool could run into as well
+
 1.1.0.0 - December 24, 2019
 
 - Ring changed their download API which caused this tool to fail on some recording downloads. Updated the code so that it downloads the recordings properly.
