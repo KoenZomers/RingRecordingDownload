@@ -19,7 +19,14 @@ namespace KoenZomers.Ring.RecordingDownload
             set
             { 
                 var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                configFile.AppSettings.Settings["RefreshToken"].Value = value;
+                if (configFile.AppSettings.Settings["RefreshToken"] == null)
+                {
+                    configFile.AppSettings.Settings.Add("RefreshToken", value);
+                }
+                else
+                {
+                    configFile.AppSettings.Settings["RefreshToken"].Value = value;
+                }
                 configFile.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
             }
