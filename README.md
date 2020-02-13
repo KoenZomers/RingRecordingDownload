@@ -14,9 +14,13 @@
 [issues]:https://github.com/koenzomers/RingRecordingDownload/issues
 
 # Ring Recording Download Tool
-Console application written in .NET Framework 4.6.2 which allows for downloading of Ring recorded events to your local machine. It is just a sample console application wrapper around the [Ring API I have written](https://github.com/KoenZomers/RingApi).
+Console application written in .NET Core compiled for Windows, Raspberry Pi, Linux and macOS which allows for downloading of Ring recorded events to your local machine. It is just a sample console application wrapper around the [Ring API I have written](https://github.com/KoenZomers/RingApi).
 
 ## Version History
+
+2.0.0.0 - February 13, 2020
+
+- Application has been recompiled in .NET Core so it runs on Windows, Linux, Raspberry Pi and macOS devices without any dependencies on OS components
 
 1.1.1.0 - February 12, 2020
 
@@ -47,12 +51,17 @@ Console application written in .NET Framework 4.6.2 which allows for downloading
 
 ## System Requirements
 
-- Windows machine
-- Microsoft .NET Framework 4.6.2
+- Either of: Windows x86, Windows x64, Windows ARM (i.e. Windows 10 IoT), Linux ARM (i.e. Raspberry Pi), Linux x64 (any Linux based distribution), Mac OS (Apple devices)
+- For all platforms the application is self containing, so it does not need anything else to be installed on the operating system, not even .NET Core
 
 ## Usage Instructions
 
-1. Download the ZIP file of the latest version from [releases](https://github.com/KoenZomers/RingRecordingDownload/releases)
+1. Download the ZIP file of the latest version from [releases](https://github.com/KoenZomers/RingRecordingDownload/releases). Make sure you download the right type for the platform on which you want to run it:
+   - Linux ARM (i.e. Raspberry Pi): linux-arm.zip
+   - Linux x64 (any Linux based distribution): linux-x64.zip
+   - Mac OSX (Apple devices): osx-x64.zip
+   - Windows 10 IoT: win-arm.zip
+   - Windows: win-x86.zip
 2. Extract it to any location on your machine
 3. Run RingRecordingDownload.exe in a Command Prompt or PowerShell window to see the possible parameters and samples
 
