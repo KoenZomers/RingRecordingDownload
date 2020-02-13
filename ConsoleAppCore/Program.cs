@@ -17,7 +17,7 @@ namespace KoenZomers.Ring.RecordingDownload
         {
             get { return ConfigurationManager.AppSettings["RefreshToken"]; }
             set
-            { 
+            {
                 var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 if (configFile.AppSettings.Settings["RefreshToken"] == null)
                 {
@@ -52,7 +52,7 @@ namespace KoenZomers.Ring.RecordingDownload
             var configuration = ParseArguments(args);
 
             // Ensure we have the required configuration
-            if(string.IsNullOrWhiteSpace(configuration.Username) && string.IsNullOrWhiteSpace(RefreshToken))
+            if (string.IsNullOrWhiteSpace(configuration.Username) && string.IsNullOrWhiteSpace(RefreshToken))
             {
                 Console.WriteLine("-username is required");
                 Environment.Exit(1);
@@ -108,7 +108,7 @@ namespace KoenZomers.Ring.RecordingDownload
             }
 
             // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
-            if(session.OAuthToken != null)
+            if (session.OAuthToken != null)
             {
                 RefreshToken = session.OAuthToken.RefreshToken;
             }
@@ -118,14 +118,14 @@ namespace KoenZomers.Ring.RecordingDownload
             var doorbotHistory = session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate).Result;
 
             // If a specific Type has been provided, filter out all the ones that don't match this type
-            if(!string.IsNullOrWhiteSpace(configuration.Type))
+            if (!string.IsNullOrWhiteSpace(configuration.Type))
             {
                 doorbotHistory = doorbotHistory.Where(h => h.Kind.Equals(configuration.Type, StringComparison.CurrentCultureIgnoreCase)).ToList();
             }
 
             Console.WriteLine($"{doorbotHistory.Count} item{(doorbotHistory.Count == 1 ? "" : "s")} found, downloading to {configuration.OutputPath}");
 
-            for(var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
+            for (var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
             {
                 var doorbotHistoryItem = doorbotHistory[itemCount];
 
@@ -134,7 +134,7 @@ namespace KoenZomers.Ring.RecordingDownload
 
                 // Construct the filename and path where to save the file
                 var downloadFileName = $"{doorbotHistoryItem.CreatedAtDateTime.Value:yyyy-MM-dd HH-mm-ss} ({doorbotHistoryItem.Id}).mp4";
-                var downloadFullPath = Path.Combine(configuration.OutputPath, downloadFileName);                
+                var downloadFullPath = Path.Combine(configuration.OutputPath, downloadFileName);
 
                 short attempt = 0;
                 do
@@ -165,7 +165,7 @@ namespace KoenZomers.Ring.RecordingDownload
                         }
                     }
 
-                    if(attempt >= configuration.MaxRetries)
+                    if (attempt >= configuration.MaxRetries)
                     {
                         Console.WriteLine(". Giving up.");
                     }
