@@ -18,6 +18,12 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
+2.0.1.0 - February 25, 2020
+
+- Rewritten the application to handle asynchronous requests better
+- Added more exception handling around the authentication
+- Fixed an issue where two factor authentication would not work [issue #6](https://github.com/KoenZomers/RingRecordingDownload/issues/6)
+
 2.0.0.0 - February 13, 2020
 
 - Application has been recompiled in .NET Core so it runs on Windows, Linux, Raspberry Pi and macOS devices without any dependencies on OS components

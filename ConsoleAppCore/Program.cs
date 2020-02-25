@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace KoenZomers.Ring.RecordingDownload
 {
@@ -32,7 +33,7 @@ namespace KoenZomers.Ring.RecordingDownload
             }
         }
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine();
 
@@ -89,16 +90,21 @@ namespace KoenZomers.Ring.RecordingDownload
 
                 try
                 {
-                    session.Authenticate().Wait();
+                    await session.Authenticate();
                 }
-                catch (Exception e) when (e.InnerException != null && e.InnerException.GetType() == typeof(Api.Exceptions.TwoFactorAuthenticationRequiredException))
+                catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
                 {
                     // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text message to be sent. Ask for the token sent in that message here.
                     Console.WriteLine($"Two factor authentication enabled on this account, please enter the token received in the text message on your phone:");
                     var token = Console.ReadLine();
 
                     // Authenticate again using the two factor token
-                    session.Authenticate(twoFactorAuthCode: token).Wait();
+                    await session.Authenticate(twoFactorAuthCode: token);
+                }
+                catch(Api.Exceptions.ThrottledException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Environment.Exit(1);
                 }
                 catch (System.Net.WebException)
                 {
@@ -145,7 +151,7 @@ namespace KoenZomers.Ring.RecordingDownload
 
                     try
                     {
-                        session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath).Wait();
+                        await session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath);
 
                         Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
                         break;
