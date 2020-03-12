@@ -18,6 +18,10 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
+[2.0.1.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.1) - March 12, 2020
+
+- Added clarification in the help that you need to wrap space containing arguments such as dates or output paths in single or double quotes
+
 [2.0.1.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.0) - February 25, 2020
 
 - Rewritten the application to handle asynchronous requests better
