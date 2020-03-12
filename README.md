@@ -20,7 +20,7 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 [2.0.1.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.1) - March 12, 2020
 
-- Added clarification in the help that you need to wrap space containing arguments such as dates or output paths in single or double quotes
+- Added clarification in the help that you need to wrap space containing arguments such as dates or output paths in single or double quotes [issue #8](https://github.com/KoenZomers/RingRecordingDownload/issues/8)
 
 [2.0.1.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.0) - February 25, 2020
 
@@ -73,7 +73,7 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
    - Mac OSX (Apple devices): osx-x64.zip
    - Windows 10 IoT: win-arm.zip
 2. Extract it to any location on your machine
-3. Run RingRecordingDownload.exe in a Command Prompt or PowerShell window to see the possible parameters and samples
+3. Run RingRecordingDownload to see the possible parameters and samples
 
 ![](./Screenshots/CommandLineOptions.png)
 
