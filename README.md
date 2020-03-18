@@ -97,6 +97,8 @@ With this tool in its current state you can:
 - Download all recordings of the last X days
 - Download all recordings between two specific data/times
 - Download all recordings of a specific type, i.e. ring or motion
+- Download all recordings from a specific Ring device
+- Download all recordings since you've last downloaded them
 
 ## Feedback
 
