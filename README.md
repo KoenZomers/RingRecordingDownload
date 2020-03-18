@@ -18,7 +18,7 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
-[2.0.2.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.2.0) - unreleased
+[2.0.2.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.2.0) - March 18, 2020
 
 - Updated [Ring API](https://github.com/KoenZomers/RingApi) to [0.4.3.1](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.3.1)
 - Added `-deviceid` option which you can specify to only download recordings for a specific Ring device
