@@ -33,13 +33,35 @@ namespace KoenZomers.Ring.RecordingDownload
             }
         }
 
+        /// <summary>
+        /// The Id of the last downloaded historical event
+        /// </summary>
+        public static string LastdownloadedRecordingId
+        {
+            get { return ConfigurationManager.AppSettings["LastdownloadedRecordingId"]; }
+            set
+            {
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (configFile.AppSettings.Settings["LastdownloadedRecordingId"] == null)
+                {
+                    configFile.AppSettings.Settings.Add("LastdownloadedRecordingId", value);
+                }
+                else
+                {
+                    configFile.AppSettings.Settings["LastdownloadedRecordingId"].Value = value;
+                }
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+        }
+
         static async Task Main(string[] args)
         {
             Console.WriteLine();
 
             var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-            Console.WriteLine("Ring Recordings Download Tool v{0}.{1}.{2} by Koen Zomers", new object[] { appVersion.Major, appVersion.Minor, appVersion.Build });
+            Console.WriteLine($"Ring Recordings Download Tool v{appVersion.Major}.{appVersion.Minor}.{appVersion.Build}.{appVersion.Revision} by Koen Zomers");
             Console.WriteLine();
 
             // Ensure arguments have been provided
@@ -94,8 +116,8 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
                 catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
                 {
-                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text message to be sent. Ask for the token sent in that message here.
-                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the token received in the text message on your phone:");
+                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
+                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the token received in the text message on your phone or the e-mail from Ring:");
                     var token = Console.ReadLine();
 
                     // Authenticate again using the two factor token
@@ -120,8 +142,19 @@ namespace KoenZomers.Ring.RecordingDownload
             }
 
             // Retrieve all sessions
-            Console.WriteLine($"Downloading {(string.IsNullOrWhiteSpace(configuration.Type) ? "all" : configuration.Type)} historical events between {configuration.StartDate.Value:dddd d MMMM yyyy HH:mm:ss} and {(configuration.EndDate.HasValue ? configuration.EndDate.Value.ToString("dddd d MMMM yyyy HH:mm:ss") : "now")}");
-            var doorbotHistory = session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate).Result;
+            Console.WriteLine($"Downloading {(string.IsNullOrWhiteSpace(configuration.Type) ? "all" : configuration.Type)} historical events between {configuration.StartDate.Value:dddd d MMMM yyyy HH:mm:ss} and {(configuration.EndDate.HasValue ? configuration.EndDate.Value.ToString("dddd d MMMM yyyy HH:mm:ss") : "now")}{(configuration.RingDeviceId.HasValue ? $" for Ring device {configuration.RingDeviceId.Value}" : "")}");
+
+
+            List <Api.Entities.DoorbotHistoryEvent> doorbotHistory = null;
+            try
+            {
+                doorbotHistory = session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate, configuration.RingDeviceId).Result;
+            }
+            catch (Exception e) when ((e is AggregateException && e.InnerException != null && e.InnerException.Message.Contains("404")) || e is Api.Exceptions.DeviceUnknownException)
+            {
+                Console.WriteLine($"No Ring device with Id {configuration.RingDeviceId} found under this account");
+                Environment.Exit(1);
+            }
 
             // If a specific Type has been provided, filter out all the ones that don't match this type
             if (!string.IsNullOrWhiteSpace(configuration.Type))
@@ -129,11 +162,38 @@ namespace KoenZomers.Ring.RecordingDownload
                 doorbotHistory = doorbotHistory.Where(h => h.Kind.Equals(configuration.Type, StringComparison.CurrentCultureIgnoreCase)).ToList();
             }
 
+            // If we should only continue downloading from the most recently successfully downloaded recording, remove all entries that are older than this one
+            if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId))
+            {
+                // Try to find the last successfully downloaded item
+                var lastDownloadedItem = doorbotHistory.FirstOrDefault(h => h.Id == LastdownloadedRecordingId);
+
+                if (lastDownloadedItem != null && lastDownloadedItem.CreatedAtDateTime.HasValue)
+                {
+                    // Only take all historical recordings which are newer than the last successfully downloaded historical item
+                    Console.WriteLine($"Filtering for recordings newer than {lastDownloadedItem.CreatedAtDateTime.Value:dddd dd MMMM yyyy} at {lastDownloadedItem.CreatedAtDateTime.Value:HH:mm:ss}");
+                    doorbotHistory = doorbotHistory.Where(h => h.CreatedAtDateTime.HasValue && h.CreatedAtDateTime.Value > lastDownloadedItem.CreatedAtDateTime.Value).ToList();
+                }
+            }
+
+            // Ensure we have items to download
+            if(doorbotHistory.Count == 0)
+            {
+                Console.WriteLine("No items found. Done.");
+                Environment.Exit(0);
+            }
+
             Console.WriteLine($"{doorbotHistory.Count} item{(doorbotHistory.Count == 1 ? "" : "s")} found, downloading to {configuration.OutputPath}");
 
             for (var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
             {
                 var doorbotHistoryItem = doorbotHistory[itemCount];
+
+                if(configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId) && doorbotHistoryItem.Id == LastdownloadedRecordingId)
+                {
+                    Console.WriteLine($"Reached previously downloaded recording with Id {LastdownloadedRecordingId}. Done.");
+                    Environment.Exit(0);
+                }
 
                 // If no valid date on the item, skip it and continue with the next
                 if (!doorbotHistoryItem.CreatedAtDateTime.HasValue) continue;
@@ -151,9 +211,16 @@ namespace KoenZomers.Ring.RecordingDownload
 
                     try
                     {
+                        // Download the recording
                         await session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath);
 
                         Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
+
+                        if (itemCount == 0)
+                        {
+                            // Store the Id of this historical item as the most recent downloaded item so it can download up to this one on a next attempt
+                            LastdownloadedRecordingId = doorbotHistoryItem.Id;
+                        }
                         break;
                     }
                     catch (AggregateException e)
@@ -183,7 +250,6 @@ namespace KoenZomers.Ring.RecordingDownload
             }
 
             Console.WriteLine("Done");
-
             Environment.Exit(0);
         }
 
@@ -253,6 +319,19 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
             }
 
+            if (args.Contains("-deviceid"))
+            {
+                if (int.TryParse(args[args.IndexOf("-deviceid") + 1], out int deviceId))
+                {
+                    configuration.RingDeviceId = deviceId;
+                }
+            }
+
+            if (args.Contains("-resumefromlastdownload"))
+            {
+                configuration.ResumeFromLastDownload = true;
+            }
+
             return configuration;
         }
 
@@ -272,14 +351,18 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("startdate: Date and time from which to start downloading events (optional)");
             Console.WriteLine("enddate: Date and time until which to download events (optional, will use now if not specified)");
             Console.WriteLine("retries: Amount of retries on download failures (optional, will use 3 retries by default)");
+            Console.WriteLine("deviceid: Id of the Ring device to download the recordings for (optional, will download for all registered Ring devices by default)");
+            Console.WriteLine("resumefromlastdownload: If provided, it will try to start downloading recordings since the last successful download");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7");
+            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -retries 5");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\"");
             Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
+            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceId 1234567");
             Console.WriteLine();
         }
     }

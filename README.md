@@ -18,9 +18,11 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
-[2.0.2.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.1) - unreleased
+[2.0.2.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.2.0) - unreleased
 
-- Updated [Ring API](https://github.com/KoenZomers/RingApi) to [0.4.2.2](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.2.2)
+- Updated [Ring API](https://github.com/KoenZomers/RingApi) to [0.4.3.1](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.3.1)
+- Added `-deviceid` option which you can specify to only download recordings for a specific Ring device
+- Added `-resumefromlastdownload` option which will keep track of the most recent successfully downloaded recording and on subsequent runs will only download recordings up to this one (all recordings are downloaded in the order of most recent to least recent) so you can run this multiple times during the day without having to download the same recordings again
 
 [2.0.1.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.1.1) - March 12, 2020
 

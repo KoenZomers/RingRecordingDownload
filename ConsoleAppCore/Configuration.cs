@@ -41,5 +41,15 @@ namespace KoenZomers.Ring.RecordingDownload
         /// Amount of times to retry downloading a recording if it fails
         /// </summary>
         public short MaxRetries = 3;
+
+        /// <summary>
+        /// The Id of a specific Ring device to download the recordings for
+        /// </summary>
+        public int? RingDeviceId;
+
+        /// <summary>
+        /// Indicates if the downloads should be resumed from the last successfully downloaded recording
+        /// </summary>
+        public bool ResumeFromLastDownload;
     }
 }
