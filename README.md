@@ -18,6 +18,11 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
+[2.0.2.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.2.1) - April 29, 2020
+
+- Updated [Ring API](https://github.com/KoenZomers/RingApi) to [0.4.3.2](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.3.2) which fixes a bug which could occasionally throw a NullReferenceException while retrieving the recorded items
+- Minor modification to the async processing of results
+
 [2.0.2.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.2.0) - March 18, 2020
 
 - Updated [Ring API](https://github.com/KoenZomers/RingApi) to [0.4.3.1](https://www.nuget.org/packages/KoenZomers.Ring.Api/0.4.3.1)

@@ -148,7 +148,7 @@ namespace KoenZomers.Ring.RecordingDownload
             List <Api.Entities.DoorbotHistoryEvent> doorbotHistory = null;
             try
             {
-                doorbotHistory = session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate, configuration.RingDeviceId).Result;
+                doorbotHistory = await session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate, configuration.RingDeviceId);
             }
             catch (Exception e) when ((e is AggregateException && e.InnerException != null && e.InnerException.Message.Contains("404")) || e is Api.Exceptions.DeviceUnknownException)
             {
@@ -223,18 +223,17 @@ namespace KoenZomers.Ring.RecordingDownload
                         }
                         break;
                     }
-                    catch (AggregateException e)
+                    catch (System.Net.WebException e)
                     {
-                        if (e.InnerException != null && e.InnerException.GetType() == typeof(System.Net.WebException) && ((System.Net.WebException)e.InnerException).Response != null)
+                        if (e.Response != null)
                         {
-                            var webException = (System.Net.WebException)e.InnerException;
-                            var response = new StreamReader(webException.Response.GetResponseStream()).ReadToEnd();
+                            var response = new StreamReader(e.Response.GetResponseStream()).ReadToEnd();
 
-                            Console.Write($"failed ({(e.InnerException != null ? e.InnerException.Message : e.Message)} - {response})");
+                            Console.Write($"failed ({e.Message} - {response})");
                         }
                         else
                         {
-                            Console.Write($"failed ({(e.InnerException != null ? e.InnerException.Message : e.Message)})");
+                            Console.Write($"failed ({e.Message})");
                         }
                     }
 

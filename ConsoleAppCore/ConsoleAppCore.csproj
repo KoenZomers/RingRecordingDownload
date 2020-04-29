@@ -7,16 +7,14 @@
     <AssemblyName>RingRecordingDownload</AssemblyName>
     <PackageId>KoenZomers.Ring.RecordingDownload</PackageId>
     <Authors>Koen Zomers</Authors>
-    <Version>2.0.2.0</Version>
+    <Version>2.0.2.1</Version>
     <Product>Ring Recording Download</Product>
     <Description>Allows downloading of recordings from Ring devices from the Ring cloud to your local machine</Description>
     <Copyright>Koen Zomers</Copyright>
     <PackageProjectUrl>https://github.com/KoenZomers/RingRecordingDownload</PackageProjectUrl>
     <PackageTags>Ring</PackageTags>
-    <PackageReleaseNotes>- Updated Ring API to version 0.4.3.1
-- Added `-deviceid` option which you can specify to only download recordings for a specific Ring device
-- Added `-resumefromlastdownload` option which will keep track of the most recent successfully downloaded recording and on subsequent runs will only download recordings up to this one (all recordings are downloaded in the order of most recent to least recent) so you can run this multiple times during the day without having to download the same recordings again
-</PackageReleaseNotes>
+    <PackageReleaseNotes>- Updated Ring API to version 0.4.3.2
+- Minor modification to the async processing of results</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -30,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KoenZomers.Ring.Api" Version="0.4.3.1" />
+    <PackageReference Include="KoenZomers.Ring.Api" Version="0.4.3.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
