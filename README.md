@@ -1,17 +1,17 @@
 [![licence badge]][licence]
-[![stars badge]][stars]
-[![forks badge]][forks]
 [![issues badge]][issues]
+[![downloads badge]][downloads]
+[![prwelcome badge]][prwelcome]
 
 [licence badge]:https://img.shields.io/badge/license-Apache2-blue.svg
-[stars badge]:https://img.shields.io/github/stars/koenzomers/RingRecordingDownload.svg
-[forks badge]:https://img.shields.io/github/forks/koenzomers/RingRecordingDownload.svg
 [issues badge]:https://img.shields.io/github/issues/koenzomers/RingRecordingDownload.svg
+[downloads badge]:https://img.shields.io/github/downloads/koenzomers/RingRecordingDownload/total.svg
+[prwelcome badge]:https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
 
 [licence]:https://github.com/koenzomers/RingRecordingDownload/blob/master/LICENSE.md
-[stars]:https://github.com/koenzomers/RingRecordingDownload/stargazers
-[forks]:https://github.com/koenzomers/RingRecordingDownload/network
 [issues]:https://github.com/koenzomers/RingRecordingDownload/issues
+[downloads]:https://github.com/koenzomers/RingRecordingDownload/releases
+[prwelcome]:http://makeapullrequest.com
 
 # Ring Recording Download Tool
 Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi, Linux and macOS which allows for downloading of Ring recorded events to your local machine. It is just a sample console application wrapper around the [Ring API I have written](https://github.com/KoenZomers/RingApi).
