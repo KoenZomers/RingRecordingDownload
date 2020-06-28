@@ -340,7 +340,7 @@ namespace KoenZomers.Ring.RecordingDownload
         private static void DisplayHelp()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("   RingRecordingDownload.exe -username <username> -password <password> [-out <folder location> -type <motion/ring/...> -lastdays X -startdate <date> -enddate <date>]");
+            Console.WriteLine("   RingRecordingDownload -username <username> -password <password> [-out <folder location> -type <motion/ring/...> -lastdays X -startdate <date> -enddate <date>]");
             Console.WriteLine();
             Console.WriteLine("username: Username of the account to use to log on to Ring");
             Console.WriteLine("password: Password of the account to use to log on to Ring");
@@ -354,14 +354,14 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("resumefromlastdownload: If provided, it will try to start downloading recordings since the last successful download");
             Console.WriteLine();
             Console.WriteLine("Example:");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -retries 5");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\"");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
-            Console.WriteLine("   RingRecordingDownload.exe -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceId 1234567");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -retries 5");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\"");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceId 1234567");
             Console.WriteLine();
         }
     }
