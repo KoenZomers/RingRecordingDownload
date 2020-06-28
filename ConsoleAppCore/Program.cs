@@ -125,7 +125,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
                 catch(Api.Exceptions.ThrottledException e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
                     Environment.Exit(1);
                 }
                 catch (System.Net.WebException)
