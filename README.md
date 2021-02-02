@@ -18,6 +18,10 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
+[2.0.3.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.3.1) - February 3, 2021
+
+- Added extra error handling around downloading the recordings
+
 [2.0.3.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.3.0) - February 2, 2021
 
 - Added -ignorecachedtoken argument to prevent the cached token from being used so i.e. you can authenticate to another Ring device [issue #10](https://github.com/KoenZomers/RingRecordingDownload/issues/10)

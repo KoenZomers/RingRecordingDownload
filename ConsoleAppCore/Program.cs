@@ -235,6 +235,10 @@ namespace KoenZomers.Ring.RecordingDownload
                             Console.Write($"failed ({e.Message})");
                         }
                     }
+                    catch(Exception e)
+                    {
+                        Console.Write($"failed ({e.Message})");
+                    }
 
                     if (attempt >= configuration.MaxRetries)
                     {
