@@ -51,5 +51,10 @@ namespace KoenZomers.Ring.RecordingDownload
         /// Indicates if the downloads should be resumed from the last successfully downloaded recording
         /// </summary>
         public bool ResumeFromLastDownload;
+
+        /// <summary>
+        /// Indicates if a token that may exist from previous sessions should not be used for authentication
+        /// </summary>
+        public bool IgnoreCachedToken;
     }
 }

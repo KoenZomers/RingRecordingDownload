@@ -75,13 +75,13 @@ namespace KoenZomers.Ring.RecordingDownload
             var configuration = ParseArguments(args);
 
             // Ensure we have the required configuration
-            if (string.IsNullOrWhiteSpace(configuration.Username) && string.IsNullOrWhiteSpace(RefreshToken))
+            if (string.IsNullOrWhiteSpace(configuration.Username) && (string.IsNullOrWhiteSpace(RefreshToken) || configuration.IgnoreCachedToken))
             {
                 Console.WriteLine("-username is required");
                 Environment.Exit(1);
             }
 
-            if (string.IsNullOrWhiteSpace(configuration.Password) && string.IsNullOrWhiteSpace(RefreshToken))
+            if (string.IsNullOrWhiteSpace(configuration.Password) && (string.IsNullOrWhiteSpace(RefreshToken) || configuration.IgnoreCachedToken))
             {
                 Console.WriteLine("-password is required");
                 Environment.Exit(1);
@@ -96,7 +96,7 @@ namespace KoenZomers.Ring.RecordingDownload
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
             Session session;
-            if (!string.IsNullOrWhiteSpace(RefreshToken))
+            if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
             {
                 // Use refresh token from previous session
                 Console.WriteLine("Authenticating using refresh token from previous session");
@@ -123,7 +123,7 @@ namespace KoenZomers.Ring.RecordingDownload
                     // Authenticate again using the two factor token
                     await session.Authenticate(twoFactorAuthCode: token);
                 }
-                catch(Api.Exceptions.ThrottledException e)
+                catch(Api.Exceptions.ThrottledException)
                 {
                     Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
                     Environment.Exit(1);
@@ -143,7 +143,6 @@ namespace KoenZomers.Ring.RecordingDownload
 
             // Retrieve all sessions
             Console.WriteLine($"Downloading {(string.IsNullOrWhiteSpace(configuration.Type) ? "all" : configuration.Type)} historical events between {configuration.StartDate.Value:dddd d MMMM yyyy HH:mm:ss} and {(configuration.EndDate.HasValue ? configuration.EndDate.Value.ToString("dddd d MMMM yyyy HH:mm:ss") : "now")}{(configuration.RingDeviceId.HasValue ? $" for Ring device {configuration.RingDeviceId.Value}" : "")}");
-
 
             List <Api.Entities.DoorbotHistoryEvent> doorbotHistory = null;
             try
@@ -331,6 +330,11 @@ namespace KoenZomers.Ring.RecordingDownload
                 configuration.ResumeFromLastDownload = true;
             }
 
+            if (args.Contains("-ignorecachedtoken"))
+            {
+                configuration.IgnoreCachedToken = true;
+            }
+
             return configuration;
         }
 
@@ -352,6 +356,7 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("retries: Amount of retries on download failures (optional, will use 3 retries by default)");
             Console.WriteLine("deviceid: Id of the Ring device to download the recordings for (optional, will download for all registered Ring devices by default)");
             Console.WriteLine("resumefromlastdownload: If provided, it will try to start downloading recordings since the last successful download");
+            Console.WriteLine("ignorecachedtoken: If provided, it will not use the cached token that may exist from a previous session");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7");
