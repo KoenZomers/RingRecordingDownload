@@ -1,0 +1,104 @@
+name: Draft new release
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.401
+        
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Version x.x.x.x
+        body: |
+          - First Change
+          - Second Change
+        draft: true
+        prerelease: false
+    - name: Create release folder
+      run: |
+        mkdir -p ${{ github.workspace }}/release
+        
+    - name: Publish Windows x86
+      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r win-x86 --self-contained true -o ${{ github.workspace }}/win-x86
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/win-x86.zip ${{ github.workspace }}/win-x86/    
+    - name: Upload win-x86 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/win-x86.zip
+        asset_name: win-x86.zip
+        asset_content_type: application/zip
+
+    - name: Publish Windows x64
+      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r win-x64 --self-contained true -o ${{ github.workspace }}/win-x64
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/win-x64.zip ${{ github.workspace }}/win-x64/    
+    - name: Upload win-x64 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/win-x64.zip
+        asset_name: win-x64.zip
+        asset_content_type: application/zip
+        
+    - name: Publish Linux ARM
+      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r linux-arm --self-contained true -o ${{ github.workspace }}/linux-arm
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/linux-arm.zip ${{ github.workspace }}/linux-arm/    
+    - name: Upload linux-arm release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/linux-arm.zip
+        asset_name: linux-arm.zip
+        asset_content_type: application/zip        
+
+        
+    - name: Publish Linux x64
+      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r linux-x64 --self-contained true -o ${{ github.workspace }}/linux-x64
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/linux-x64.zip ${{ github.workspace }}/linux-x64/    
+    - name: Upload linux-x64 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/linux-x64.zip
+        asset_name: linux-x64.zip
+        asset_content_type: application/zip 
+        
+    - name: Publish OSX x64
+      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r osx-x64 --self-contained true -o ${{ github.workspace }}/osx-x64
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/osx-x64.zip ${{ github.workspace }}/osx-x64/    
+    - name: Upload linux-arm release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/osx-x64.zip
+        asset_name: osx-x64.zip
+        asset_content_type: application/zip         
