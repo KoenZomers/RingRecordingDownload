@@ -7,7 +7,7 @@
     <AssemblyName>RingRecordingDownload</AssemblyName>
     <PackageId>KoenZomers.Ring.RecordingDownload</PackageId>
     <Authors>Koen Zomers</Authors>
-    <Version>2.1.0.0</Version>
+    <Version>2.1.0.1</Version>
     <Product>Ring Recording Download</Product>
     <Description>Allows downloading of recordings from Ring devices from the Ring cloud to your local machine</Description>
     <Copyright>Koen Zomers</Copyright>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KoenZomers.Ring.Api" Version="0.5.0" />
+    <PackageReference Include="KoenZomers.Ring.Api" Version="0.5.0.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
   </ItemGroup>
 
