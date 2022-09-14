@@ -87,11 +87,17 @@ namespace KoenZomers.Ring.RecordingDownload
                 Environment.Exit(1);
             }
 
-            if (!configuration.StartDate.HasValue)
+            if (!configuration.RingDeviceId.HasValue && !configuration.ListBots)
+            {
+                Console.WriteLine("Error: -deviceid or -list is required");
+                Environment.Exit(1);
+            }
+
+            if (!configuration.StartDate.HasValue && !configuration.ListBots)
             {
                 Console.WriteLine("-startdate or -lastdays is required");
                 Environment.Exit(1);
-            }
+            }            
 
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
@@ -117,7 +123,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
                 {
                     // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
-                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the token received in the text message on your phone or the e-mail from Ring:");
+                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the Ring token from the e-mail, text message or authenticator app:");
                     var token = Console.ReadLine();
 
                     // Authenticate again using the two factor token
@@ -141,114 +147,155 @@ namespace KoenZomers.Ring.RecordingDownload
                 RefreshToken = session.OAuthToken.RefreshToken;
             }
 
-            // Retrieve all sessions
-            Console.WriteLine($"Downloading {(string.IsNullOrWhiteSpace(configuration.Type) ? "all" : configuration.Type)} historical events between {configuration.StartDate.Value:dddd d MMMM yyyy HH:mm:ss} and {(configuration.EndDate.HasValue ? configuration.EndDate.Value.ToString("dddd d MMMM yyyy HH:mm:ss") : "now")}{(configuration.RingDeviceId.HasValue ? $" for Ring device {configuration.RingDeviceId.Value}" : "")}");
-
-            List <Api.Entities.DoorbotHistoryEvent> doorbotHistory = null;
-            try
+            if (configuration.ListBots)
             {
-                doorbotHistory = await session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate, configuration.RingDeviceId);
-            }
-            catch (Exception e) when ((e is AggregateException && e.InnerException != null && e.InnerException.Message.Contains("404")) || e is Api.Exceptions.DeviceUnknownException)
-            {
-                Console.WriteLine($"No Ring device with Id {configuration.RingDeviceId} found under this account");
-                Environment.Exit(1);
-            }
+                // Retrieve all available Ring devices and list them
+                Console.Write("Retrieving all devices... ");
+                
+                var devices = await session.GetRingDevices();
 
-            // If a specific Type has been provided, filter out all the ones that don't match this type
-            if (!string.IsNullOrWhiteSpace(configuration.Type))
-            {
-                doorbotHistory = doorbotHistory.Where(h => h.Kind.Equals(configuration.Type, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            }
+                Console.WriteLine($"{devices.Doorbots.Count + devices.AuthorizedDoorbots.Count + devices.StickupCams.Count} found");
+                Console.WriteLine();
 
-            // If we should only continue downloading from the most recently successfully downloaded recording, remove all entries that are older than this one
-            if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId))
-            {
-                // Try to find the last successfully downloaded item
-                var lastDownloadedItem = doorbotHistory.FirstOrDefault(h => h.Id == LastdownloadedRecordingId);
-
-                if (lastDownloadedItem != null && lastDownloadedItem.CreatedAtDateTime.HasValue)
+                if (devices.AuthorizedDoorbots.Count > 0)
                 {
-                    // Only take all historical recordings which are newer than the last successfully downloaded historical item
-                    Console.WriteLine($"Filtering for recordings newer than {lastDownloadedItem.CreatedAtDateTime.Value:dddd dd MMMM yyyy} at {lastDownloadedItem.CreatedAtDateTime.Value:HH:mm:ss}");
-                    doorbotHistory = doorbotHistory.Where(h => h.CreatedAtDateTime.HasValue && h.CreatedAtDateTime.Value > lastDownloadedItem.CreatedAtDateTime.Value).ToList();
+                    Console.WriteLine("Authorized Doorbells");
+                    foreach (var device in devices.AuthorizedDoorbots)
+                    {
+                        Console.WriteLine($"{device.Id} - {device.Description}");
+                    }
+                    Console.WriteLine();
+                }
+                if (devices.Doorbots.Count > 0)
+                {
+                    Console.WriteLine("Doorbells");
+                    foreach (var device in devices.Doorbots)
+                    {
+                        Console.WriteLine($"{device.Id} - {device.Description}");
+                    }
+                    Console.WriteLine();
+                }
+                if (devices.StickupCams.Count > 0)
+                {
+                    Console.WriteLine("Stickup cams");
+                    foreach (var device in devices.StickupCams)
+                    {
+                        Console.WriteLine($"{device.Id} - {device.Description}");
+                    }
+                    Console.WriteLine();
                 }
             }
-
-            // Ensure we have items to download
-            if(doorbotHistory.Count == 0)
+            else
             {
-                Console.WriteLine("No items found. Done.");
-                Environment.Exit(0);
-            }
+                // Retrieve all sessions
+                Console.WriteLine($"Downloading {(string.IsNullOrWhiteSpace(configuration.Type) ? "all" : configuration.Type)} historical events between {configuration.StartDate.Value:dddd d MMMM yyyy HH:mm:ss} and {(configuration.EndDate.HasValue ? configuration.EndDate.Value.ToString("dddd d MMMM yyyy HH:mm:ss") : "now")}{(configuration.RingDeviceId.HasValue ? $" for Ring device {configuration.RingDeviceId.Value}" : "")}");
 
-            Console.WriteLine($"{doorbotHistory.Count} item{(doorbotHistory.Count == 1 ? "" : "s")} found, downloading to {configuration.OutputPath}");
-
-            for (var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
-            {
-                var doorbotHistoryItem = doorbotHistory[itemCount];
-
-                if(configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId) && doorbotHistoryItem.Id == LastdownloadedRecordingId)
+                List<Api.Entities.DoorbotHistoryEvent> doorbotHistory = null;
+                try
                 {
-                    Console.WriteLine($"Reached previously downloaded recording with Id {LastdownloadedRecordingId}. Done.");
+                    doorbotHistory = await session.GetDoorbotsHistory(configuration.StartDate.Value, configuration.EndDate, configuration.RingDeviceId);
+                }
+                catch (Exception e) when ((e is AggregateException && e.InnerException != null && e.InnerException.Message.Contains("404")) || e is Api.Exceptions.DeviceUnknownException)
+                {
+                    Console.WriteLine($"No Ring device with Id {configuration.RingDeviceId} found under this account");
+                    Environment.Exit(1);
+                }
+
+                // If a specific Type has been provided, filter out all the ones that don't match this type
+                if (!string.IsNullOrWhiteSpace(configuration.Type))
+                {
+                    doorbotHistory = doorbotHistory.Where(h => h.Kind.Equals(configuration.Type, StringComparison.CurrentCultureIgnoreCase)).ToList();
+                }
+
+                // If we should only continue downloading from the most recently successfully downloaded recording, remove all entries that are older than this one
+                if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId))
+                {
+                    // Try to find the last successfully downloaded item
+                    var lastDownloadedItem = doorbotHistory.FirstOrDefault(h => h.Id == LastdownloadedRecordingId);
+
+                    if (lastDownloadedItem != null && lastDownloadedItem.CreatedAtDateTime.HasValue)
+                    {
+                        // Only take all historical recordings which are newer than the last successfully downloaded historical item
+                        Console.WriteLine($"Filtering for recordings newer than {lastDownloadedItem.CreatedAtDateTime.Value:dddd dd MMMM yyyy} at {lastDownloadedItem.CreatedAtDateTime.Value:HH:mm:ss}");
+                        doorbotHistory = doorbotHistory.Where(h => h.CreatedAtDateTime.HasValue && h.CreatedAtDateTime.Value > lastDownloadedItem.CreatedAtDateTime.Value).ToList();
+                    }
+                }
+
+                // Ensure we have items to download
+                if (doorbotHistory.Count == 0)
+                {
+                    Console.WriteLine("No items found. Done.");
                     Environment.Exit(0);
                 }
 
-                // If no valid date on the item, skip it and continue with the next
-                if (!doorbotHistoryItem.CreatedAtDateTime.HasValue) continue;
+                Console.WriteLine($"{doorbotHistory.Count} item{(doorbotHistory.Count == 1 ? "" : "s")} found, downloading to {configuration.OutputPath}");
 
-                // Construct the filename and path where to save the file
-                var downloadFileName = $"{doorbotHistoryItem.CreatedAtDateTime.Value:yyyy-MM-dd HH-mm-ss} ({doorbotHistoryItem.Id}).mp4";
-                var downloadFullPath = Path.Combine(configuration.OutputPath, downloadFileName);
-
-                short attempt = 0;
-                do
+                for (var itemCount = 0; itemCount < doorbotHistory.Count; itemCount++)
                 {
-                    attempt++;
+                    var doorbotHistoryItem = doorbotHistory[itemCount];
 
-                    Console.Write($"{itemCount + 1} - {downloadFileName}... ");
-
-                    try
+                    if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId) && doorbotHistoryItem.Id == LastdownloadedRecordingId)
                     {
-                        // Download the recording
-                        await session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath);
-
-                        Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
-
-                        if (itemCount == 0)
-                        {
-                            // Store the Id of this historical item as the most recent downloaded item so it can download up to this one on a next attempt
-                            LastdownloadedRecordingId = doorbotHistoryItem.Id;
-                        }
-                        break;
+                        Console.WriteLine($"Reached previously downloaded recording with Id {LastdownloadedRecordingId}. Done.");
+                        Environment.Exit(0);
                     }
-                    catch (System.Net.WebException e)
-                    {
-                        if (e.Response != null)
-                        {
-                            var response = new StreamReader(e.Response.GetResponseStream()).ReadToEnd();
 
-                            Console.Write($"failed ({e.Message} - {response})");
+                    // If no valid date on the item, skip it and continue with the next
+                    if (!doorbotHistoryItem.CreatedAtDateTime.HasValue) continue;
+
+                    // Construct the filename and path where to save the file
+                    var downloadFileName = $"{doorbotHistoryItem.CreatedAtDateTime.Value:yyyy-MM-dd HH-mm-ss} ({doorbotHistoryItem.Id}).mp4";
+                    var downloadFullPath = Path.Combine(configuration.OutputPath, downloadFileName);
+
+                    short attempt = 0;
+                    do
+                    {
+                        attempt++;
+
+                        Console.Write($"{itemCount + 1} - {downloadFileName}... ");
+
+                        try
+                        {
+                            // Download the recording
+                            await session.GetDoorbotHistoryRecording(doorbotHistoryItem, downloadFullPath);
+
+                            Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
+
+                            if (itemCount == 0)
+                            {
+                                // Store the Id of this historical item as the most recent downloaded item so it can download up to this one on a next attempt
+                                LastdownloadedRecordingId = doorbotHistoryItem.Id;
+                            }
+                            break;
                         }
-                        else
+                        catch (System.Net.WebException e)
+                        {
+                            if (e.Response != null)
+                            {
+                                var response = new StreamReader(e.Response.GetResponseStream()).ReadToEnd();
+
+                                Console.Write($"failed ({e.Message} - {response})");
+                            }
+                            else
+                            {
+                                Console.Write($"failed ({e.Message})");
+                            }
+                        }
+                        catch (Exception e)
                         {
                             Console.Write($"failed ({e.Message})");
                         }
-                    }
-                    catch(Exception e)
-                    {
-                        Console.Write($"failed ({e.Message})");
-                    }
 
-                    if (attempt >= configuration.MaxRetries)
-                    {
-                        Console.WriteLine(". Giving up.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($". Retrying {attempt + 1}/{configuration.MaxRetries}.");
-                    }
-                } while (attempt < configuration.MaxRetries);
+                        if (attempt >= configuration.MaxRetries)
+                        {
+                            Console.WriteLine(". Giving up.");
+                        }
+                        else
+                        {
+                            Console.WriteLine($". Retrying {attempt + 1}/{configuration.MaxRetries}.");
+                        }
+                    } while (attempt < configuration.MaxRetries);
+                }
             }
 
             Console.WriteLine("Done");
@@ -282,6 +329,11 @@ namespace KoenZomers.Ring.RecordingDownload
             {
                 configuration.Password = args[args.IndexOf("-password") + 1];
             }
+
+            if (args.Contains("-list"))
+            {
+                configuration.ListBots = true;
+            }            
 
             if (args.Contains("-type"))
             {
@@ -352,6 +404,7 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine();
             Console.WriteLine("username: Username of the account to use to log on to Ring");
             Console.WriteLine("password: Password of the account to use to log on to Ring");
+            Console.WriteLine("list: Request an overview of the Ring devices available in your account so you can get the deviceid value");
             Console.WriteLine("out: The folder where to store the recordings (optional, will use current directory if not specified)");
             Console.WriteLine("type: The type of events to store the recordings of, i.e. motion or ring (optional, will download them all if not specified)");
             Console.WriteLine("lastdays: The amount of days in the past to download recordings of (optional)");
@@ -363,6 +416,7 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("ignorecachedtoken: If provided, it will not use the cached token that may exist from a previous session");
             Console.WriteLine();
             Console.WriteLine("Example:");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -list");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -retries 5");

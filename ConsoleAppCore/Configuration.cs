@@ -33,6 +33,11 @@ namespace KoenZomers.Ring.RecordingDownload
         public string Password;
 
         /// <summary>
+        /// Boolean indicating if a listing of available bots should be returned
+        /// </summary>
+        public bool ListBots { get; set; } = false;        
+
+        /// <summary>
         /// Type of historical event to download
         /// </summary>
         public string Type;
