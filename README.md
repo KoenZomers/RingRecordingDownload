@@ -1,6 +1,7 @@
 [![licence badge]][licence]
 [![issues badge]][issues]
 [![downloads badge]][downloads]
+[![Continuous Integration Build](https://github.com/KoenZomers/RingRecordingDownload/actions/workflows/ci.yaml/badge.svg)](https://github.com/KoenZomers/RingRecordingDownload/actions/workflows/ci.yaml)
 [![prwelcome badge]][prwelcome]
 
 [licence badge]:https://img.shields.io/badge/license-Apache2-blue.svg
