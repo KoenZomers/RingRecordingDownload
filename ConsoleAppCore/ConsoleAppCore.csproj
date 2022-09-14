@@ -7,7 +7,7 @@
     <AssemblyName>RingRecordingDownload</AssemblyName>
     <PackageId>KoenZomers.Ring.RecordingDownload</PackageId>
     <Authors>Koen Zomers</Authors>
-    <Version>2.0.4.0</Version>
+    <Version>2.0.5.0</Version>
     <Product>Ring Recording Download</Product>
     <Description>Allows downloading of recordings from Ring devices from the Ring cloud to your local machine</Description>
     <Copyright>Koen Zomers</Copyright>
