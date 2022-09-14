@@ -211,7 +211,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId))
                 {
                     // Try to find the last successfully downloaded item
-                    var lastDownloadedItem = doorbotHistory.FirstOrDefault(h => h.Id == LastdownloadedRecordingId);
+                    var lastDownloadedItem = doorbotHistory.FirstOrDefault(h => h.Id.HasValue && h.Id.Value.ToString() == LastdownloadedRecordingId);
 
                     if (lastDownloadedItem != null && lastDownloadedItem.CreatedAtDateTime.HasValue)
                     {
@@ -234,7 +234,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 {
                     var doorbotHistoryItem = doorbotHistory[itemCount];
 
-                    if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId) && doorbotHistoryItem.Id == LastdownloadedRecordingId)
+                    if (configuration.ResumeFromLastDownload && !string.IsNullOrWhiteSpace(LastdownloadedRecordingId) && doorbotHistoryItem.Id.HasValue && doorbotHistoryItem.Id.Value.ToString() == LastdownloadedRecordingId)
                     {
                         Console.WriteLine($"Reached previously downloaded recording with Id {LastdownloadedRecordingId}. Done.");
                         Environment.Exit(0);
@@ -261,10 +261,10 @@ namespace KoenZomers.Ring.RecordingDownload
 
                             Console.WriteLine($"done ({new FileInfo(downloadFullPath).Length / 1048576} MB)");
 
-                            if (itemCount == 0)
+                            if (itemCount == 0 && doorbotHistoryItem.Id.HasValue)
                             {
                                 // Store the Id of this historical item as the most recent downloaded item so it can download up to this one on a next attempt
-                                LastdownloadedRecordingId = doorbotHistoryItem.Id;
+                                LastdownloadedRecordingId = doorbotHistoryItem.Id.Value.ToString();
                             }
                             break;
                         }
