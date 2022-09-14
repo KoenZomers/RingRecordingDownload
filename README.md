@@ -18,6 +18,10 @@ Console application written in .NET Core 3.1 compiled for Windows, Raspberry Pi,
 
 ## Version History
 
+[2.0.4.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.4.0) -September 14, 2022
+
+- Added `-list` option to show the available Ring devices with their deviceid
+
 [2.0.3.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.0.3.1) - February 3, 2021
 
 - Added extra error handling around downloading the recordings
