@@ -19,6 +19,10 @@ Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux 
 
 ## Version History
 
+[2.2.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.2.0.0) - July 4, 2023
+
+- Upgraded to [Ring API v0.5.2.0](https://github.com/KoenZomers/RingApi#version-history)
+
 [2.1.0.1](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/2.1.0.0) - September 14, 2022
 
 - Upgraded to [Ring API v0.5.0.1](https://github.com/KoenZomers/RingApi#version-history)

@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KoenZomers.Ring.Api" Version="0.5.1" />
+    <PackageReference Include="KoenZomers.Ring.Api" Version="0.5.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
   </ItemGroup>
 
