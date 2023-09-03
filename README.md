@@ -15,7 +15,7 @@
 [prwelcome]:http://makeapullrequest.com
 
 # Ring Recording Download Tool
-Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux and macOS which allows for downloading of Ring recorded events to your local machine. It is just a sample console application wrapper around the [Ring API I have written](https://github.com/KoenZomers/RingApi).
+Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux and macOS which allows for downloading of Ring recorded events to your local machine.
 
 ## Version History
 
@@ -115,11 +115,10 @@ Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux 
 ## Usage Instructions
 
 1. Download the ZIP file of the latest version from [releases](https://github.com/KoenZomers/RingRecordingDownload/releases). Make sure you download the right type for the platform on which you want to run it:
-   - Windows 7 SP1 or later, Windows 8.1, Windows 10 version 1607 or later, Windows Server 2012 R2 or later: win-x86.zip
-   - Linux ARM (i.e. Raspberry Pi): linux-arm.zip
+   - Windows 7 SP1 or later, Windows 8.1, Windows 10 version 1607 or later, Windows 11, Windows Server 2012 R2 or later: win-x64.zip (64 bit) or win-x86.zip (32 bit)
+   - Linux ARM (i.e. Raspberry Pi): linux-arm.zip (32 bit) or linux-arm64.zip (64 bit)
    - Linux x64 (any Linux based distribution): linux-x64.zip
-   - Mac OSX (Apple devices): osx-x64.zip
-   - Windows 10 IoT: win-arm.zip
+   - Mac OSX (Apple devices): osx-x64.zip or osx-arm64.zip
 2. Extract it to any location on your machine
 3. Run RingRecordingDownload to see the possible parameters and samples
 
