@@ -20,6 +20,7 @@
     <RepositoryUrl>https://github.com/KoenZomers/RingApi</RepositoryUrl>
     <PackageLicenseExpression> EPL-2.0</PackageLicenseExpression>
     <PackageTags>Ring;Ring Api;Ring Doorbell;.NET;C#</PackageTags>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

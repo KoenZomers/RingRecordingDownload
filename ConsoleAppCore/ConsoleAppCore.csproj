@@ -14,6 +14,7 @@
     <PackageProjectUrl>https://github.com/KoenZomers/RingRecordingDownload</PackageProjectUrl>
     <PackageTags>Ring</PackageTags>
     <PackageReleaseNotes>- Upgraded to [Ring API v0.5.3.0](https://github.com/KoenZomers/RingApi#version-history) which fixes some parsing issues</PackageReleaseNotes>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
