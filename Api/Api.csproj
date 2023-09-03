@@ -13,7 +13,7 @@
     <PackageProjectUrl>https://github.com/KoenZomers/RingApi</PackageProjectUrl>
     <AssemblyVersion>0.5.3</AssemblyVersion>
     <PackageReleaseNotes>- Fixed a few more issues with Ring devices not properly being parsed</PackageReleaseNotes>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Copyright>Koen Zomers</Copyright>
     <FileVersion>0.5.3</FileVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -25,13 +25,6 @@
 
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
   </ItemGroup>
 
 
