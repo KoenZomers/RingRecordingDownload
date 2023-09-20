@@ -424,7 +424,7 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\"");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
-            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceId 1234567");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceid 1234567");
             Console.WriteLine();
         }
     }
