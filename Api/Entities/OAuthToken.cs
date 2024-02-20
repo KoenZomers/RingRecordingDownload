@@ -8,6 +8,8 @@ namespace KoenZomers.Ring.Api.Entities
     /// </summary>
     public class OAutToken
     {
+        private DateTime _expiresAt;
+
         /// <summary>
         /// The OAuth access token that can be used as a Bearer token to communicate with the Ring API
         /// </summary>
@@ -17,7 +19,19 @@ namespace KoenZomers.Ring.Api.Entities
         /// <summary>
         /// Gets a DateTime with when this token expires
         /// </summary>
-        public DateTime ExpiresAt { get; private set; }
+        public DateTime ExpiresAt
+        {
+            get { return _expiresAt; }
+            // Sets token expiry datetime
+            set { _expiresAt = value; }
+        }
+
+        [JsonPropertyName("expires_in")]
+        public int ExpiresIn
+        {
+            // Calculate and set token expiry date
+            set { ExpiresAt = DateTime.UtcNow.AddSeconds(value); }
+        }
 
         /// <summary>
         /// The OAuth Refresh Token that can be used to get a new OAuth Access Token after it expires
