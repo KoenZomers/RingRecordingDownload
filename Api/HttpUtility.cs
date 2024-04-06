@@ -131,6 +131,9 @@ namespace KoenZomers.Ring.Api
                 }
             }
 
+            // Always add the User-Agent header
+            request.Headers.UserAgent.TryParseAdd("android:com.ringapp");
+
             // Set the content for the HTTP request
             request.Content = new FormUrlEncodedContent(formFields);
 
@@ -224,6 +227,9 @@ namespace KoenZomers.Ring.Api
                 request.Headers.Add(HttpRequestHeader.Authorization.ToString(), $"Bearer {bearerToken}");
             }
 
+            // Always add the User-Agent header
+            request.Headers.UserAgent.TryParseAdd("android:com.ringapp");
+
             if (bodyContent != null)
             {
                 request.Content = new StringContent(bodyContent, Encoding.UTF8, "application/json");
@@ -275,6 +281,9 @@ namespace KoenZomers.Ring.Api
             {
                 request.Headers.Add(HttpRequestHeader.Authorization.ToString(), $"Bearer {bearerToken}");
             }
+
+            // Always add the User-Agent header
+            request.Headers.UserAgent.TryParseAdd("android:com.ringapp");
 
             if (bodyContent != null)
             {
