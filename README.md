@@ -21,7 +21,7 @@ Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux 
 
 [3.1.1.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/3.1.1.0) - April 7, 2024
 
-- Fixed login and refresh session issue, ring was returning 406 due to headers missing
+- Fixed typo in console application
 
 [3.1.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/3.1.0.0) - April 6, 2024
 
