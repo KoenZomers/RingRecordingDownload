@@ -74,7 +74,20 @@ jobs:
         asset_name: linux-arm.zip
         asset_content_type: application/zip
 
-        
+    - name: Publish Linux ARM x64
+      run: dotnet publish ConsoleAppCore/ConsoleAppCore.csproj -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r linux-arm64 --self-contained true -o ${{ github.workspace }}/linux-arm64
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/linux-arm64.zip ${{ github.workspace }}/linux-arm64/
+    - name: Upload linux-arm64 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/linux-arm64.zip
+        asset_name: linux-arm64.zip
+        asset_content_type: application/zip
+
     - name: Publish Linux x64
       run: dotnet publish ConsoleAppCore/ConsoleAppCore.csproj -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r linux-x64 --self-contained true -o ${{ github.workspace }}/linux-x64
     - name: Zip Folder
@@ -87,13 +100,13 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/release/linux-x64.zip
         asset_name: linux-x64.zip
-        asset_content_type: application/zip 
-        
+        asset_content_type: application/zip
+
     - name: Publish OSX x64
       run: dotnet publish ConsoleAppCore/ConsoleAppCore.csproj -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r osx-x64 --self-contained true -o ${{ github.workspace }}/osx-x64
     - name: Zip Folder
       run: zip -r -D -j ${{ github.workspace }}/release/osx-x64.zip ${{ github.workspace }}/osx-x64/
-    - name: Upload linux-arm release asset
+    - name: Upload OSX X64 release asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,4 +114,18 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/release/osx-x64.zip
         asset_name: osx-x64.zip
+        asset_content_type: application/zip
+
+    - name: Publish OSX arm64
+      run: dotnet publish ConsoleAppCore/ConsoleAppCore.csproj -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r osx-arm64 --self-contained true -o ${{ github.workspace }}/osx-arm64
+    - name: Zip Folder
+      run: zip -r -D -j ${{ github.workspace }}/release/osx-arm64.zip ${{ github.workspace }}/osx-arm64/
+    - name: Upload OSX arm64 release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/release/osx-arm64.zip
+        asset_name: osx-arm64.zip
         asset_content_type: application/zip
