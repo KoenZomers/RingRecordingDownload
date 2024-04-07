@@ -10,4 +10,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("Debug")]
 [assembly: AssemblyCopyright("Koen Zomers")]
 [assembly: AssemblyMetadata("RepositoryUrl", "https://github.com/KoenZomers/RingRecordingDownload")]
-[assembly: AssemblyVersion("3.1.0.0")]
+[assembly: AssemblyVersion("3.2.0.0")]
