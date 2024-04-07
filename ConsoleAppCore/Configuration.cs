@@ -35,7 +35,7 @@ namespace KoenZomers.Ring.RecordingDownload
         /// <summary>
         /// Boolean indicating if a listing of available bots should be returned
         /// </summary>
-        public bool ListBots { get; set; } = false;        
+        public bool ListBots { get; set; } = false;
 
         /// <summary>
         /// Type of historical event to download
