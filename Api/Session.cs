@@ -293,7 +293,7 @@ namespace KoenZomers.Ring.Api
             }
 
             // Ensure the access token in the session is still valid
-            if (OAuthToken.ExpiresAt < DateTime.Now)
+            if (OAuthToken.ExpiresAt <= DateTime.Now)
             {
                 // Access token is no longer valid, check if we have a refresh token available to refresh the session
                 if (string.IsNullOrEmpty(OAuthToken.RefreshToken))
