@@ -47,7 +47,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Publish Windows x64
-      run: dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r win-x64 --self-contained true -o ${{ github.workspace }}/win-x64
+      run: dotnet publish ConsoleAppCore/ConsoleAppCore.csproj -p:PublishSingleFile=true -p:PublishTrimmed=true -p:DebugType=None -p:DebugSymbols=false -r win-x64 --self-contained true -o ${{ github.workspace }}/win-x64
     - name: Zip Folder
       run: zip -r -D -j ${{ github.workspace }}/release/win-x64.zip ${{ github.workspace }}/win-x64/
     - name: Upload win-x64 release asset
@@ -72,7 +72,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/release/linux-arm.zip
         asset_name: linux-arm.zip
-        asset_content_type: application/zip        
+        asset_content_type: application/zip
 
         
     - name: Publish Linux x64
