@@ -302,6 +302,8 @@ namespace KoenZomers.Ring.Api
                     throw new Exceptions.SessionNotAuthenticatedException();
                 }
 
+                Console.WriteLine("Refreshing session, Token expired at {0}", OAuthToken.ExpiresAt);
+
                 // Refresh token available, try refreshing the session
                 await RefreshSession();
             }
