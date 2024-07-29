@@ -273,7 +273,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 Console.WriteLine("Authenticating using refresh token from previous session");
                 if (session?.OAuthToken != null )
                 {
-                    Console.WriteLine("Session already exists, last token expires(d) at {0}", session.OAuthToken.ExpiresAt);
+                    Console.WriteLine("Session already exists, last token expires(d) at {0}, current time is {1}", session.OAuthToken.ExpiresAt, DateTime.Now);
                 }
 
                 session = await Session.GetSessionByRefreshToken(RefreshToken);
@@ -311,7 +311,8 @@ namespace KoenZomers.Ring.RecordingDownload
             }
 
             // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
-            if (session.OAuthToken != null)
+            // This is only if RefreshToken is null, if not, we're using the refresh token from a previous session
+            if (session.OAuthToken != null && RefreshToken == null)
             {
                 RefreshToken = session.OAuthToken.RefreshToken;
             }
