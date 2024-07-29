@@ -101,11 +101,12 @@ namespace KoenZomers.Ring.Api
 
             // Return the response from the server
             var responseFromServer = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 Console.WriteLine("Response to get contents was not successful.");
                 Console.WriteLine("Response Status: {0}", response.StatusCode);
                 Console.WriteLine("Response: {0}", responseFromServer);
+                response.EnsureSuccessStatusCode(); // throws HttpRequestException that can get caught to re-authenticate.
             }
 
             return responseFromServer;

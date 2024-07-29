@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace KoenZomers.Ring.RecordingDownload
 {
@@ -97,61 +98,18 @@ namespace KoenZomers.Ring.RecordingDownload
             {
                 Console.WriteLine("-startdate or -lastdays is required");
                 Environment.Exit(1);
-            }            
+            }
 
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
-            Session session;
-            if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
-            {
-                // Use refresh token from previous session
-                Console.WriteLine("Authenticating using refresh token from previous session");
-
-                session = Session.GetSessionByRefreshToken(RefreshToken).Result;
-            }
-            else
-            {
-                // Use the username and password provided
-                Console.WriteLine("Authenticating using provided username and password");
-
-                session = new Session(configuration.Username, configuration.Password);
-
-                try
-                {
-                    await session.Authenticate();
-                }
-                catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
-                {
-                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
-                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the Ring token from the e-mail, text message or authenticator app:");
-                    var token = Console.ReadLine();
-
-                    // Authenticate again using the two factor token
-                    await session.Authenticate(twoFactorAuthCode: token);
-                }
-                catch(Api.Exceptions.ThrottledException)
-                {
-                    Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
-                    Environment.Exit(1);
-                }
-                catch (System.Net.WebException)
-                {
-                    Console.WriteLine("Connection failed. Validate your credentials.");
-                    Environment.Exit(1);
-                }
-            }
-
-            // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
-            if (session.OAuthToken != null)
-            {
-                RefreshToken = session.OAuthToken.RefreshToken;
-            }
+            Session session = null;
+            session = await CreateSessionAsync(configuration, session);
 
             if (configuration.ListBots)
             {
                 // Retrieve all available Ring devices and list them
                 Console.Write("Retrieving all devices... ");
-                
+
                 var devices = await session.GetRingDevices();
 
                 Console.WriteLine($"{devices.Doorbots.Count + devices.AuthorizedDoorbots.Count + devices.StickupCams.Count} found");
@@ -268,6 +226,11 @@ namespace KoenZomers.Ring.RecordingDownload
                             }
                             break;
                         }
+                        catch (HttpRequestException e)
+                            when (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            await CreateSessionAsync(configuration, session);
+                        }
                         catch (System.Net.WebException e)
                         {
                             if (e.Response != null)
@@ -300,6 +263,60 @@ namespace KoenZomers.Ring.RecordingDownload
 
             Console.WriteLine("Done");
             Environment.Exit(0);
+        }
+
+        private static async Task<Session> CreateSessionAsync(Configuration configuration, Session session)
+        {
+            if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
+            {
+                // Use refresh token from previous session
+                Console.WriteLine("Authenticating using refresh token from previous session");
+                if (session?.OAuthToken != null )
+                {
+                    Console.WriteLine("Session already exists, last token expires(d) at {0}", session.OAuthToken.ExpiresAt);
+                }
+
+                session = await Session.GetSessionByRefreshToken(RefreshToken);
+            }
+            else
+            {
+                // Use the username and password provided
+                Console.WriteLine("Authenticating using provided username and password");
+
+                session = new Session(configuration.Username, configuration.Password);
+
+                try
+                {
+                    await session.Authenticate();
+                }
+                catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
+                {
+                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
+                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the Ring token from the e-mail, text message or authenticator app:");
+                    var token = Console.ReadLine();
+
+                    // Authenticate again using the two factor token
+                    await session.Authenticate(twoFactorAuthCode: token);
+                }
+                catch (Api.Exceptions.ThrottledException)
+                {
+                    Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
+                    Environment.Exit(1);
+                }
+                catch (System.Net.WebException)
+                {
+                    Console.WriteLine("Connection failed. Validate your credentials.");
+                    Environment.Exit(1);
+                }
+            }
+
+            // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
+            if (session.OAuthToken != null)
+            {
+                RefreshToken = session.OAuthToken.RefreshToken;
+            }
+
+            return session;
         }
 
         /// <summary>
