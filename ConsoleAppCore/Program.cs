@@ -17,7 +17,11 @@ namespace KoenZomers.Ring.RecordingDownload
         /// </summary>
         public static string RefreshToken
         {
-            get { return ConfigurationManager.AppSettings["RefreshToken"]; }
+            get 
+            {
+                Console.WriteLine("Got Refresh token at {0}", DateTime.Now);
+                return ConfigurationManager.AppSettings["RefreshToken"];
+            }
             set
             {
                 var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -31,6 +35,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
                 configFile.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                Console.WriteLine("Refresh token refreshed at {0}", DateTime.Now);
             }
         }
 

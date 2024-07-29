@@ -125,12 +125,12 @@ namespace KoenZomers.Ring.Api
         /// <exception cref="Exceptions.ThrottledException">Thrown when the web server indicates too many requests have been made (HTTP 429).</exception>
         /// <exception cref="Exceptions.TwoFactorAuthenticationIncorrectException">Thrown when the web server indicates the two-factor code was incorrect (HTTP 400).</exception>
         /// <exception cref="Exceptions.TwoFactorAuthenticationRequiredException">Thrown when the web server indicates two-factor authentication is required (HTTP 412).</exception>
-        public async Task Authenticate(   string operatingSystem = "windows", 
-                                                            string hardwareId = "unspecified", 
-                                                            string appBrand = "ring", 
-                                                            string deviceModel = "unspecified", 
-                                                            string deviceName = "unspecified", 
-                                                            string resolution = "800x600", 
+        public async Task Authenticate(string operatingSystem = "windows",
+                                                            string hardwareId = "unspecified",
+                                                            string appBrand = "ring",
+                                                            string deviceModel = "unspecified",
+                                                            string deviceName = "unspecified",
+                                                            string resolution = "800x600",
                                                             string appVersion = "2.1.8",
                                                             DateTime? appInstallationDate = null,
                                                             string manufacturer = "unspecified",
@@ -173,7 +173,7 @@ namespace KoenZomers.Ring.Api
             }
 
             // Make the Form POST request to request an OAuth Token
-            var oAuthResponse = await _httpUtility.FormPost( RingApiOAuthUrl,
+            var oAuthResponse = await _httpUtility.FormPost(RingApiOAuthUrl,
                                                             oAuthformFields,
                                                             headerFields);
 
@@ -201,7 +201,7 @@ namespace KoenZomers.Ring.Api
             if (!string.IsNullOrEmpty(language)) sessionFormFields.Add("device[metadata][language]", System.Net.WebUtility.UrlEncode(language));
 
             // Make the Form POST request to authenticate
-            var sessionResponse = await _httpUtility.FormPost(   new Uri(RingApiBaseUrl, "session"),
+            var sessionResponse = await _httpUtility.FormPost(new Uri(RingApiBaseUrl, "session"),
                                                                 sessionFormFields,
                                                                 new System.Collections.Specialized.NameValueCollection
                                                                 {
@@ -241,12 +241,16 @@ namespace KoenZomers.Ring.Api
             var oAuthformFields = new Dictionary<string, string>
             {
                 { "grant_type", "refresh_token" },
-                { "refresh_token", refreshToken }
+                { "refresh_token", refreshToken },
+                { "client_id", "ring_official_android" },
+                { "scope", "client" }
             };
-            
+
             // mandatory headers.
             var headerFields = new NameValueCollection()
             {
+                { "2fa-support", "true" },
+                { "2fa-code", "" },
                 { "hardware_id", "unspecified" }
             };
 
@@ -261,7 +265,7 @@ namespace KoenZomers.Ring.Api
                 // Deserialize the JSON result into a typed object
                 OAuthToken = JsonSerializer.Deserialize<OAutToken>(oAuthResponse);
             }
-            catch(System.Net.WebException e)
+            catch (System.Net.WebException e)
             {
                 // If a WebException gets thrown with Unauthorized it means that the refresh token was not valid, throw a custom exception to indicate this
                 if (e.Message.Contains("Unauthorized"))
@@ -307,7 +311,7 @@ namespace KoenZomers.Ring.Api
                 // Refresh token available, try refreshing the session
                 await RefreshSession();
             }
-            
+
             // All good
         }
 
@@ -325,7 +329,7 @@ namespace KoenZomers.Ring.Api
             await EnsureSessionValid();
 
             var response = await _httpUtility.GetContents(new Uri(RingApiBaseUrl, $"ring_devices"), AuthenticationToken);
-            
+
             var devices = JsonSerializer.Deserialize<Devices>(response);
             return devices;
         }
@@ -396,7 +400,7 @@ namespace KoenZomers.Ring.Api
             var downloadRequestUri = new Uri(RingApiBaseUrl, $"dings/{dingId}/share/download?disable_redirect=true");
 
             Entities.DownloadRecording downloadResult = null;
-            for(var downloadAttempt = 1; downloadAttempt < 60; downloadAttempt++)
+            for (var downloadAttempt = 1; downloadAttempt < 60; downloadAttempt++)
             {
                 // Request to download the recording
                 var response = await _httpUtility.GetContents(downloadRequestUri, AuthenticationToken);
@@ -466,7 +470,7 @@ namespace KoenZomers.Ring.Api
 
             using var stream = await GetDoorbotHistoryRecording(dingId);
             using var fileStream = File.Create(saveAs);
-            
+
             await stream.CopyToAsync(fileStream);
         }
 
