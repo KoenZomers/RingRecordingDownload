@@ -234,7 +234,13 @@ namespace KoenZomers.Ring.RecordingDownload
                         catch (HttpRequestException e)
                             when (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                         {
-                            await CreateSessionAsync(configuration, session);
+                            int retry = 1;
+                            do
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(30 * retry));
+                                await CreateSessionAsync(configuration, session);
+                            } while (retry++ < 4);
+                            
                         }
                         catch (System.Net.WebException e)
                         {
