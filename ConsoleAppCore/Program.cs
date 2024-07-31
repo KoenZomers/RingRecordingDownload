@@ -107,8 +107,7 @@ namespace KoenZomers.Ring.RecordingDownload
 
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
-            Session session = null;
-            session = await CreateSessionAsync(configuration, session);
+            Session session = await CreateSessionAsync(configuration);
 
             if (configuration.ListBots)
             {
@@ -235,11 +234,20 @@ namespace KoenZomers.Ring.RecordingDownload
                             when (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                         {
                             int retry = 1;
+                            int totalRetries = 3;
                             do
                             {
-                                await Task.Delay(TimeSpan.FromSeconds(30 * retry));
-                                await CreateSessionAsync(configuration, session);
-                            } while (retry++ < 4);
+                                int seconds = 30 * retry;
+                                try
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(seconds));
+                                    session = await CreateSessionAsync(configuration);
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Failed to create session, re-try {0} out of {1}, retrying after {2}...", retry, totalRetries, seconds);
+                                }
+                            } while (retry++ <= totalRetries);
                             
                         }
                         catch (System.Net.WebException e)
@@ -276,8 +284,9 @@ namespace KoenZomers.Ring.RecordingDownload
             Environment.Exit(0);
         }
 
-        private static async Task<Session> CreateSessionAsync(Configuration configuration, Session session)
+        private static async Task<Session> CreateSessionAsync(Configuration configuration)
         {
+            Session session = null;
             if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
             {
                 // Use refresh token from previous session
