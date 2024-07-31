@@ -361,11 +361,20 @@ namespace KoenZomers.Ring.Api
 
             do
             {
+
                 // Retrieve a batch with historical items
                 var response = await _httpUtility.GetContents(new Uri(RingApiBaseUrl, $"doorbots/{(doorbotId.HasValue ? $"{doorbotId.Value}/" : "")}history?limit={batchWithItems}{(doorbotHistory.Count == 0 ? "" : "&older_than=" + doorbotHistory.Last().Id)}"), AuthenticationToken);
 
-                // Parse the result
-                doorbotHistory = JsonSerializer.Deserialize<List<DoorbotHistoryEvent>>(response);
+                try
+                {
+                    // Parse the result
+                    doorbotHistory = JsonSerializer.Deserialize<List<DoorbotHistoryEvent>>(response);
+                }
+                catch (JsonException)
+                {
+                    Console.WriteLine("Error parsing JSON: {0}", response);
+                    throw;
+                }
 
                 // Add this next batch to the list with all the results which fit within the provided date span
                 allHistory.AddRange(doorbotHistory.Where(h => h.CreatedAtDateTime.HasValue && h.CreatedAtDateTime.Value >= startDate && (!endDate.HasValue || h.CreatedAtDateTime.Value <= endDate.Value)));
