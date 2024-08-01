@@ -230,26 +230,6 @@ namespace KoenZomers.Ring.RecordingDownload
                             }
                             break;
                         }
-                        catch (HttpRequestException e)
-                            when (e.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        {
-                            int retry = 1;
-                            int totalRetries = 3;
-                            do
-                            {
-                                int seconds = 30 * retry;
-                                try
-                                {
-                                    await Task.Delay(TimeSpan.FromSeconds(seconds));
-                                    session = await CreateSessionAsync(configuration);
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Failed to create session, re-try {0} out of {1}, retrying after {2}...", retry, totalRetries, seconds);
-                                }
-                            } while (retry++ <= totalRetries);
-                            
-                        }
                         catch (System.Net.WebException e)
                         {
                             if (e.Response != null)
@@ -277,6 +257,9 @@ namespace KoenZomers.Ring.RecordingDownload
                             Console.WriteLine($". Retrying {attempt + 1}/{configuration.MaxRetries}.");
                         }
                     } while (attempt < configuration.MaxRetries);
+
+                    Console.WriteLine("Waiting for {0} seconds before continuing...", configuration.TimeBetwenCalls.TotalSeconds);
+                    await Task.Delay(configuration.TimeBetwenCalls);
                 }
             }
 
@@ -419,6 +402,14 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
             }
 
+            if (args.Contains("-timeBetweenCalls"))
+            {
+                if (TimeSpan.TryParse(args[args.IndexOf("-timeBetweenCalls") + 1], out TimeSpan timeBetweenCalls))
+                {
+                    configuration.TimeBetwenCalls = timeBetweenCalls;
+                }
+            }
+
             if (args.Contains("-resumefromlastdownload"))
             {
                 configuration.ResumeFromLastDownload = true;
@@ -452,11 +443,12 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("deviceid: Id of the Ring device to download the recordings for (optional, will download for all registered Ring devices by default)");
             Console.WriteLine("resumefromlastdownload: If provided, it will try to start downloading recordings since the last successful download");
             Console.WriteLine("ignorecachedtoken: If provided, it will not use the cached token that may exist from a previous session");
+            Console.WriteLine("timeBetweenCalls: Timespan, if provided, it will wait the amount provided between downloads, default is 0");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -list");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7");
-            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload -timeBetweenCalls 00:00:30");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -retries 5");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
