@@ -27,6 +27,10 @@
     <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+  </ItemGroup>
+
 
 
 </Project>

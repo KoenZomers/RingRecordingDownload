@@ -7,12 +7,15 @@ using System.Threading;
 using System.Text.Json;
 using KoenZomers.Ring.Api.Entities;
 using System.Collections.Specialized;
+using System.Configuration;
 
 namespace KoenZomers.Ring.Api
 {
     public class Session
     {
         #region Properties
+
+        public const string DeviceId = nameof(DeviceId);
 
         /// <summary>
         /// Username to use to connect to the Ring API. Set by providing it in the constructor.
@@ -51,6 +54,27 @@ namespace KoenZomers.Ring.Api
         /// OAuth Token for communicating with the Ring API
         /// </summary>
         public OAutToken OAuthToken { get; private set; }
+
+        public static string GetDeviceIdOrDefault()
+        {
+            var deviceId = ConfigurationManager.AppSettings[DeviceId];
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                deviceId = Guid.NewGuid().ToString();
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (configFile.AppSettings.Settings[DeviceId] == null)
+                {
+                    configFile.AppSettings.Settings.Add(DeviceId, deviceId);
+                }
+                else
+                {
+                    configFile.AppSettings.Settings[DeviceId].Value = deviceId;
+                }
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+            return deviceId;
+        }
 
         #endregion
 
@@ -155,22 +179,17 @@ namespace KoenZomers.Ring.Api
             {
                 { "grant_type", "password" },
                 { "username", Username },
-                { "password", Password},
+                { "password", Password },
                 { "client_id", "ring_official_android" },
                 { "scope", "client" }
             };
 
-            var headerFields = new NameValueCollection(capacity: 3)
-            {
-                { "hardware_id", hardwareId }
-            };
-
+            var deviceId = GetDeviceIdOrDefault();
             // If a two factor auth code has been provided, add the code through the HTTP POST header
-            if (twoFactorAuthCode != null)
-            {
-                headerFields.Add("2fa-support", "true");
-                headerFields.Add("2fa-code", twoFactorAuthCode);
-            }
+            var headerFields = new System.Collections.Specialized.NameValueCollection();
+            headerFields.Add("2fa-support", "true");
+            headerFields.Add("2fa-code", twoFactorAuthCode);
+            headerFields.Add("hardware_id", deviceId);
 
             // Make the Form POST request to request an OAuth Token
             var oAuthResponse = await _httpUtility.FormPost(RingApiOAuthUrl,
@@ -181,34 +200,12 @@ namespace KoenZomers.Ring.Api
             // Deserialize the JSON result into a typed object
             OAuthToken = JsonSerializer.Deserialize<OAutToken>(oAuthResponse);
 
-            // Construct the Form POST fields to send along with the session request
-            var sessionFormFields = new Dictionary<string, string>
-            {
-                { "device[os]", System.Net.WebUtility.UrlEncode(operatingSystem) },
-                { "device[hardware_id]", System.Net.WebUtility.UrlEncode(hardwareId) }
-            };
 
-            // Add optional fields if they have been provided
-            if (!string.IsNullOrEmpty(appBrand)) sessionFormFields.Add("device[app_brand]", System.Net.WebUtility.UrlEncode(appBrand));
-            if (!string.IsNullOrEmpty(deviceModel)) sessionFormFields.Add("device[metadata][device_model]", System.Net.WebUtility.UrlEncode(deviceModel));
-            if (!string.IsNullOrEmpty(deviceName)) sessionFormFields.Add("device[metadata][device_name]", System.Net.WebUtility.UrlEncode(deviceName));
-            if (!string.IsNullOrEmpty(resolution)) sessionFormFields.Add("device[metadata][resolution]", System.Net.WebUtility.UrlEncode(resolution));
-            if (!string.IsNullOrEmpty(appVersion)) sessionFormFields.Add("device[metadata][app_version]", System.Net.WebUtility.UrlEncode(appVersion));
-            if (appInstallationDate.HasValue) sessionFormFields.Add("device[metadata][app_instalation_date]", string.Format("{0:yyyy-MM-dd}+{0:HH}%3A{0:mm}%3A{0:ss}Z", appInstallationDate.Value));
-            if (!string.IsNullOrEmpty(manufacturer)) sessionFormFields.Add("device[metadata][manufacturer]", System.Net.WebUtility.UrlEncode(manufacturer));
-            if (!string.IsNullOrEmpty(deviceType)) sessionFormFields.Add("device[metadata][device_type]", System.Net.WebUtility.UrlEncode(deviceType));
-            if (!string.IsNullOrEmpty(architecture)) sessionFormFields.Add("device[metadata][architecture]", System.Net.WebUtility.UrlEncode(architecture));
-            if (!string.IsNullOrEmpty(language)) sessionFormFields.Add("device[metadata][language]", System.Net.WebUtility.UrlEncode(language));
+            string json = $"{{ \"device\": {{ \"metadata\" : {{ \"api_version\" : 11, \"device_model\": \"ring-client-api\"  }}, \"hardware_id\" : \"{deviceId}\", \"os\" : \"android\"  }}}}";
+            var sessionResponse = await _httpUtility.SendRequest(new Uri(RingApiBaseUrl, "session"), httpMethod: System.Net.Http.HttpMethod.Post, json, OAuthToken.AccessToken);
 
-            // Make the Form POST request to authenticate
-            var sessionResponse = await _httpUtility.FormPost(new Uri(RingApiBaseUrl, "session"),
-                                                                sessionFormFields,
-                                                                new System.Collections.Specialized.NameValueCollection
-                                                                {
-                                                                    { "Accept-Encoding", "gzip, deflate" },
-                                                                    { "X-API-LANG", "en" },
-                                                                    { "Authorization", $"Bearer {OAuthToken.AccessToken}" }
-                                                                });
+            // Deserialize the JSON result into a typed object
+            var session = JsonSerializer.Deserialize<Session>(sessionResponse);
 
         }
 
