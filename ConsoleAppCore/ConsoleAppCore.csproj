@@ -7,13 +7,13 @@
     <AssemblyName>RingRecordingDownload</AssemblyName>
     <PackageId>KoenZomers.Ring.RecordingDownload</PackageId>
     <Authors>Koen Zomers</Authors>
-    <Version>3.2.0.0</Version>
+    <Version>4.0.0.0</Version>
     <Product>Ring Recording Download</Product>
     <Description>Allows downloading of recordings from Ring devices from the Ring cloud to your local machine</Description>
     <Copyright>Koen Zomers</Copyright>
     <PackageProjectUrl>https://github.com/KoenZomers/RingRecordingDownload</PackageProjectUrl>
     <PackageTags>Ring</PackageTags>
-    <PackageReleaseNotes>- Upgraded to [Ring API v0.5.3.0](https://github.com/KoenZomers/RingApi#version-history) which fixes some parsing issues</PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixes Session bug that causes the access and refresh token to expire before it should.</PackageReleaseNotes>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -43,4 +43,11 @@
     <ProjectReference Include="..\Api\Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
+

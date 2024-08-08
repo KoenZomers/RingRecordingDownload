@@ -6,17 +6,25 @@ using System.Reflection;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
+using System.Net.Http;
+using KoenZomers.Ring.Api.Entities;
 
 namespace KoenZomers.Ring.RecordingDownload
 {
     class Program
     {
+        public const string HardwareId = nameof(HardwareId);
+
         /// <summary>
         /// Refresh token to use to authenticate to the Ring API
         /// </summary>
         public static string RefreshToken
         {
-            get { return ConfigurationManager.AppSettings["RefreshToken"]; }
+            get 
+            {
+                Console.WriteLine("Got Refresh token at {0}", DateTime.Now);
+                return ConfigurationManager.AppSettings["RefreshToken"];
+            }
             set
             {
                 var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -30,6 +38,7 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
                 configFile.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                Console.WriteLine("Refresh token refreshed at {0}", DateTime.Now);
             }
         }
 
@@ -97,61 +106,17 @@ namespace KoenZomers.Ring.RecordingDownload
             {
                 Console.WriteLine("-startdate or -lastdays is required");
                 Environment.Exit(1);
-            }            
+            }
 
             // Connect to Ring
             Console.WriteLine("Connecting to Ring services");
-            Session session;
-            if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
-            {
-                // Use refresh token from previous session
-                Console.WriteLine("Authenticating using refresh token from previous session");
-
-                session = Session.GetSessionByRefreshToken(RefreshToken).Result;
-            }
-            else
-            {
-                // Use the username and password provided
-                Console.WriteLine("Authenticating using provided username and password");
-
-                session = new Session(configuration.Username, configuration.Password);
-
-                try
-                {
-                    await session.Authenticate();
-                }
-                catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
-                {
-                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
-                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the Ring token from the e-mail, text message or authenticator app:");
-                    var token = Console.ReadLine();
-
-                    // Authenticate again using the two factor token
-                    await session.Authenticate(twoFactorAuthCode: token);
-                }
-                catch(Api.Exceptions.ThrottledException)
-                {
-                    Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
-                    Environment.Exit(1);
-                }
-                catch (System.Net.WebException)
-                {
-                    Console.WriteLine("Connection failed. Validate your credentials.");
-                    Environment.Exit(1);
-                }
-            }
-
-            // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
-            if (session.OAuthToken != null)
-            {
-                RefreshToken = session.OAuthToken.RefreshToken;
-            }
+            Session session = await CreateSessionAsync(configuration);
 
             if (configuration.ListBots)
             {
                 // Retrieve all available Ring devices and list them
                 Console.Write("Retrieving all devices... ");
-                
+
                 var devices = await session.GetRingDevices();
 
                 Console.WriteLine($"{devices.Doorbots.Count + devices.AuthorizedDoorbots.Count + devices.StickupCams.Count} found");
@@ -295,11 +260,70 @@ namespace KoenZomers.Ring.RecordingDownload
                             Console.WriteLine($". Retrying {attempt + 1}/{configuration.MaxRetries}.");
                         }
                     } while (attempt < configuration.MaxRetries);
+
+                    Console.WriteLine("Waiting for {0} seconds before continuing...", configuration.TimeBetwenCalls.TotalSeconds);
+                    await Task.Delay(configuration.TimeBetwenCalls);
                 }
             }
 
             Console.WriteLine("Done");
             Environment.Exit(0);
+        }
+
+        private static async Task<Session> CreateSessionAsync(Configuration configuration)
+        {
+            Session session = null;
+            if (!string.IsNullOrWhiteSpace(RefreshToken) && !configuration.IgnoreCachedToken)
+            {
+                // Use refresh token from previous session
+                Console.WriteLine("Authenticating using refresh token from previous session");
+                if (session?.OAuthToken != null )
+                {
+                    Console.WriteLine("Session already exists, last token expires(d) at {0}, current time is {1}", session.OAuthToken.ExpiresAt, DateTime.Now);
+                }
+
+                session = await Session.GetSessionByRefreshToken(RefreshToken, GetHardwareIdOrDefault());
+            }
+            else
+            {
+                // Use the username and password provided
+                Console.WriteLine("Authenticating using provided username and password");
+
+                session = new Session(configuration.Username, configuration.Password, GetHardwareIdOrDefault());
+
+                try
+                {
+                    await session.Authenticate();
+                }
+                catch (Api.Exceptions.TwoFactorAuthenticationRequiredException)
+                {
+                    // Two factor authentication is enabled on the account. The above Authenticate() will trigger a text or e-mail message to be sent. Ask for the token sent in that message here.
+                    Console.WriteLine($"Two factor authentication enabled on this account, please enter the Ring token from the e-mail, text message or authenticator app:");
+                    var token = Console.ReadLine();
+
+                    // Authenticate again using the two factor token
+                    await session.Authenticate(twoFactorAuthCode: token);
+                }
+                catch (Api.Exceptions.ThrottledException)
+                {
+                    Console.WriteLine("Two factor authentication is required, but too many tokens have been requested recently. Wait for a few minutes and try connecting again.");
+                    Environment.Exit(1);
+                }
+                catch (System.Net.WebException)
+                {
+                    Console.WriteLine("Connection failed. Validate your credentials.");
+                    Environment.Exit(1);
+                }
+            }
+
+            // If we have a refresh token, update the config file with it so we don't need to authenticate again next time
+            // This is only if RefreshToken is null, if not, we're using the refresh token from a previous session
+            if (session.OAuthToken != null && RefreshToken == null)
+            {
+                RefreshToken = session.OAuthToken.RefreshToken;
+            }
+
+            return session;
         }
 
         /// <summary>
@@ -381,6 +405,14 @@ namespace KoenZomers.Ring.RecordingDownload
                 }
             }
 
+            if (args.Contains("-timeBetweenCalls"))
+            {
+                if (TimeSpan.TryParse(args[args.IndexOf("-timeBetweenCalls") + 1], out TimeSpan timeBetweenCalls))
+                {
+                    configuration.TimeBetwenCalls = timeBetweenCalls;
+                }
+            }
+
             if (args.Contains("-resumefromlastdownload"))
             {
                 configuration.ResumeFromLastDownload = true;
@@ -414,11 +446,12 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("deviceid: Id of the Ring device to download the recordings for (optional, will download for all registered Ring devices by default)");
             Console.WriteLine("resumefromlastdownload: If provided, it will try to start downloading recordings since the last successful download");
             Console.WriteLine("ignorecachedtoken: If provided, it will not use the cached token that may exist from a previous session");
+            Console.WriteLine("timeBetweenCalls: Timespan, if provided, it will wait the amount provided between downloads, default is 0");
             Console.WriteLine();
             Console.WriteLine("Example:");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -list");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7");
-            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload");
+            Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 1 -resumefromlastdownload -timeBetweenCalls 00:00:30");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -retries 5");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -lastdays 7 -type ring -out \"c:\\recordings path\"");
@@ -426,6 +459,27 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceid 1234567");
             Console.WriteLine();
+        }
+
+        private static string GetHardwareIdOrDefault()
+        {
+            var deviceId = ConfigurationManager.AppSettings[HardwareId];
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                deviceId = Guid.NewGuid().ToString();
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (configFile.AppSettings.Settings[HardwareId] == null)
+                {
+                    configFile.AppSettings.Settings.Add(HardwareId, deviceId);
+                }
+                else
+                {
+                    configFile.AppSettings.Settings[HardwareId].Value = deviceId;
+                }
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+            return deviceId;
         }
     }
 }
