@@ -19,6 +19,11 @@ Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux 
 
 ## Version History
 
+[4.0.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/4.0.0.0) - Aug, 07, 2024
+
+- Fixes Session bug that causes the access and refresh token to expire before it should.
+
+
 [3.2.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/3.2.0.0) - July 26, 2024
 
 - Fixes Token Expiration logic that throws session errors after the token expires.

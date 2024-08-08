@@ -7,11 +7,14 @@ using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
+using KoenZomers.Ring.Api.Entities;
 
 namespace KoenZomers.Ring.RecordingDownload
 {
     class Program
     {
+        public const string HardwareId = nameof(HardwareId);
+
         /// <summary>
         /// Refresh token to use to authenticate to the Ring API
         /// </summary>
@@ -279,14 +282,14 @@ namespace KoenZomers.Ring.RecordingDownload
                     Console.WriteLine("Session already exists, last token expires(d) at {0}, current time is {1}", session.OAuthToken.ExpiresAt, DateTime.Now);
                 }
 
-                session = await Session.GetSessionByRefreshToken(RefreshToken);
+                session = await Session.GetSessionByRefreshToken(RefreshToken, GetHardwareIdOrDefault());
             }
             else
             {
                 // Use the username and password provided
                 Console.WriteLine("Authenticating using provided username and password");
 
-                session = new Session(configuration.Username, configuration.Password);
+                session = new Session(configuration.Username, configuration.Password, GetHardwareIdOrDefault());
 
                 try
                 {
@@ -456,6 +459,27 @@ namespace KoenZomers.Ring.RecordingDownload
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\"");
             Console.WriteLine("   RingRecordingDownload -username my@email.com -password mypassword -startdate \"12-02-2019 08:12:45\" -enddate \"12-03-2019 10:53:12\" -deviceid 1234567");
             Console.WriteLine();
+        }
+
+        private static string GetHardwareIdOrDefault()
+        {
+            var deviceId = ConfigurationManager.AppSettings[HardwareId];
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                deviceId = Guid.NewGuid().ToString();
+                var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (configFile.AppSettings.Settings[HardwareId] == null)
+                {
+                    configFile.AppSettings.Settings.Add(HardwareId, deviceId);
+                }
+                else
+                {
+                    configFile.AppSettings.Settings[HardwareId].Value = deviceId;
+                }
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+            }
+            return deviceId;
         }
     }
 }
