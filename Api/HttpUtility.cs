@@ -90,7 +90,7 @@ namespace KoenZomers.Ring.Api
             // Send the request to the webserver
             var response = await _httpClient.SendAsync(request);
 
-            switch(response.StatusCode)
+            switch (response.StatusCode)
             {
                 case HttpStatusCode.TooManyRequests:
                     throw new Exceptions.ThrottledException();
@@ -101,6 +101,14 @@ namespace KoenZomers.Ring.Api
 
             // Return the response from the server
             var responseFromServer = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                Console.WriteLine("Response to get contents was not successful.");
+                Console.WriteLine("Response Status: {0}", response.StatusCode);
+                Console.WriteLine("Response: {0}", responseFromServer);
+                response.EnsureSuccessStatusCode(); // throws HttpRequestException that can get caught to re-authenticate.
+            }
+
             return responseFromServer;
         }
 

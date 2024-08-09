@@ -61,5 +61,10 @@ namespace KoenZomers.Ring.RecordingDownload
         /// Indicates if a token that may exist from previous sessions should not be used for authentication
         /// </summary>
         public bool IgnoreCachedToken;
+
+        /// <summary>
+        /// The time to wait between calls to the Ring API
+        /// </summary>
+        public TimeSpan TimeBetwenCalls = TimeSpan.Zero;
     }
 }
