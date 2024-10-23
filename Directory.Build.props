@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <TargetFrameworks>net8.0</TargetFrameworks>
+         <ApplicationVersion>$(ApplicationVersion)</ApplicationVersion>
+    </PropertyGroup>
+</Project>
