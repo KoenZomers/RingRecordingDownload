@@ -1,21 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>KoenZomers.Ring.Api</RootNamespace>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\KoenZomers.Ring.RecordingDownload.snk</AssemblyOriginatorKeyFile>
     <AssemblyName>KoenZomers.Ring.Api</AssemblyName>
-    <Version>4.0.0.0</Version>
+    <Version>$(ApplicationVersion)</Version>
     <Company>Koen Zomers</Company>
     <Authors>Koen Zomers</Authors>
     <Description>API in .NET to communicate with the Ring Doorbell service</Description>
     <PackageProjectUrl>https://github.com/KoenZomers/RingApi</PackageProjectUrl>
-    <AssemblyVersion>0.5.3</AssemblyVersion>
+    <AssemblyVersion>$(ApplicationVersion)</AssemblyVersion>
     <PackageReleaseNotes>- Fixed a few more issues with Ring devices not properly being parsed</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Copyright>Koen Zomers</Copyright>
-    <FileVersion>0.5.3</FileVersion>
+    <FileVersion>$(ApplicationVersion)</FileVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/KoenZomers/RingApi</RepositoryUrl>
     <PackageLicenseExpression> EPL-2.0</PackageLicenseExpression>

@@ -18,6 +18,9 @@
 Console application written in .NET 6 compiled for Windows, Raspberry Pi, Linux and macOS which allows for downloading of Ring recorded events to your local machine.
 
 ## Version History
+[5.0.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/5.0.0.0) - Oct, 23, 2024
+
+- Added support for .NET 8
 
 [4.0.0.0](https://github.com/KoenZomers/RingRecordingDownload/releases/tag/4.0.0.0) - Aug, 07, 2024
 

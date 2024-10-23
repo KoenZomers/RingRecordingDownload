@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		AssemblyInfo.cs = AssemblyInfo.cs
 		.github\workflows\ci.yaml = .github\workflows\ci.yaml
+		Directory.build.props = Directory.build.props
 		.github\workflows\draftnewrelease.yml = .github\workflows\draftnewrelease.yml
 		KoenZomers.Ring.RecordingDownload.snk = KoenZomers.Ring.RecordingDownload.snk
 		README.md = README.md

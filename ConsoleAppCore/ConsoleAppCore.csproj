@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>KoenZomers.Ring.RecordingDownload</RootNamespace>
     <AssemblyName>RingRecordingDownload</AssemblyName>
     <PackageId>KoenZomers.Ring.RecordingDownload</PackageId>
     <Authors>Koen Zomers</Authors>
-    <Version>4.0.0.0</Version>
+    <Version>$(ApplicationVersion)</Version>
     <Product>Ring Recording Download</Product>
     <Description>Allows downloading of recordings from Ring devices from the Ring cloud to your local machine</Description>
     <Copyright>Koen Zomers</Copyright>
