@@ -160,7 +160,3 @@ With this tool in its current state you can:
 - Download all recordings of a specific type, i.e. ring or motion
 - Download all recordings from a specific Ring device
 - Download all recordings since you've last downloaded them
-
-## Feedback
-
-Any kind of feedback is welcome! Feel free to drop me an e-mail at koen@zomers.eu or [create an issue](https://github.com/KoenZomers/RingRecordingDownload/issues).
